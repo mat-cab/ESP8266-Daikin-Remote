@@ -1,6 +1,4 @@
-#include <stdint.h>
-
-#include <Wire.h>
+#include "Wire.h"
 
 #include "SHT31_Lib.h"
 #include "Measurement.h" 

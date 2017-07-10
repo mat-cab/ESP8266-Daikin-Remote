@@ -7,6 +7,8 @@
 // Delay between SHT31 command to measure and data feedback
 #define SHT31_DELAY 300
 
+#include "Arduino.h"
+
 #include "Measurement.h"
 
 // Function used to measure temperature and humidity
