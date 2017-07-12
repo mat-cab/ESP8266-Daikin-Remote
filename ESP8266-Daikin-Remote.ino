@@ -7,6 +7,7 @@
 #include "CustomConstants.h"
 #include "Measurement.h"
 #include "SHT31_Lib.h"
+#include "ESP8266-Daikin-Remote.h"
 
 // Used for debug purposes
 // Comment for production
