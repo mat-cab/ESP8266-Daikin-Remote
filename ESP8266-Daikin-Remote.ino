@@ -5,8 +5,11 @@
 
 // Project includes
 #include "CustomConstants.h"
+#include "I2C_Constants.h"
 #include "Measurement.h"
 #include "SHT31_Lib.h"
+#include "RTCMem_Lib.h"
+#include "EEPROM_Lib.h"
 #include "ESP8266-Daikin-Remote.h"
 
 // Used for debug purposes
@@ -18,23 +21,6 @@
 #define CYCLE_TIME 30000
 #define CYCLE_ITERATIONS 60
 #define CYCLE_FACTOR 1.02
-
-// Constants for the ESP8266
-// ESP8266 GPIO SDA pin for the I2C bus
-#define ESP8266_SDA 12
-// ESP8266 GPIO SCL pin for the I2C bus
-#define ESP8266_SCL 14
-// Max size for each I2C transfer in bytes
-// NOTE: real max value is 32 bytes. However in I2C transfers the first two bytes are already taken for addresses
-#define ESP8266_WIRE_BUFFER_LENGTH 30
-
-// Constants for the 24LC256 memory (External ROM)
-// EEPROM I2C Address
-#define EEPROM_ADDR 0x50
-// EEPROM delay for the write operations
-#define EEPROM_DELAY 6
-// EEPROM page size in bytes
-#define EEPROM_PAGE_SIZE 64
 
 // Wifi delay loop time
 #define WIFI_WAIT 1000
@@ -65,19 +51,6 @@ WiFiClient client;
 
 float *cycleFactor;
 time_t *RTCtimestamp;  
-
-// structures for the RTC memory
-struct {
-  uint32_t crc32; 
-  byte data[508];
-} rtcRawData;
-
-struct rtcData {
-  time_t timestamp;
-  uint16_t iteration;
-  float cycle_factor;
-};
-
 
 void setup() {
   // Power off Wifi
@@ -547,129 +520,3 @@ void updateTime(String timestamp) {
 
   *RTCtimestamp = newTime - (uint32_t)((currentMillis - 1000)/1000);
 }
-
-int32_t calculateCRC32(const uint8_t *data, size_t length)
-{
-  uint32_t crc = 0xffffffff;
-  while (length--) {
-    uint8_t c = *data++;
-    for (uint32_t i = 0x80; i > 0; i >>= 1) {
-      bool bit = crc & 0x80000000;
-      if (c & i) {
-        bit = !bit;
-      }
-      crc <<= 1;
-      if (bit) {
-        crc ^= 0x04c11db7;
-      }
-    }
-  }
-  return crc;
-}
-
-int32_t getRTCmemCRC() {
-  return calculateCRC32(((uint8_t*) &rtcRawData) + 4, sizeof(rtcRawData) - 4);
-}
-
-void writeRTCmem()
-{
-  // Update CRC32 of data
-  rtcRawData.crc32 = getRTCmemCRC();
-  // Write struct to RTC memory
-  ESP.rtcUserMemoryWrite(0, (uint32_t*) &rtcRawData, sizeof(rtcRawData));
-}
- 
-void writeEEPROM(uint16_t eeaddress, byte *data, uint8_t dataLength ) {
-  uint8_t writtenData = 0, dataWriteLength = 0;
-  byte returnCode;  
-
-  // Loop for all the data
-  while (writtenData < dataLength) {
-    // This is the next write length
-    // reduce to less than 30 bytes
-    dataWriteLength = dataLength > ESP8266_WIRE_BUFFER_LENGTH-2 ? ESP8266_WIRE_BUFFER_LENGTH-2 : dataLength;
-    // stay on the same memory page
-    dataWriteLength = EEPROM_PAGE_SIZE - (eeaddress % EEPROM_PAGE_SIZE) < dataWriteLength ? EEPROM_PAGE_SIZE - (eeaddress % EEPROM_PAGE_SIZE) : dataWriteLength;
-
-    // Begin writing into EEPROM
-    Wire.beginTransmission(EEPROM_ADDR);
-    Wire.write((int)(eeaddress >> 8));   // MSB
-    Wire.write((int)(eeaddress & 0xFF)); // LSB
-    for (byte i=0; i<dataWriteLength; i++) {
-      Wire.write(*(data+i));
-    }
-
-    returnCode = Wire.endTransmission();
-
-#ifdef DEBUG
-    if (returnCode > 0) {
-      Serial.println("Error "+String(returnCode)+" when writing to the EEPROM");
-    }
-#endif
-    // update the number of data written
-    writtenData += dataWriteLength;
-
-    // update the EEPROM and data addresses
-    eeaddress += dataWriteLength;
-    data += dataWriteLength;
-
-    // wait for the write to complete
-    delay(EEPROM_DELAY);
-  }
-}
- 
-void readEEPROM(uint16_t eeaddress, byte* dataPointer, uint8_t dataLength) {
-  // if requesting more than 32 bytes, necessary to read the first 32 bytes because of Wire library restriction
-  if (dataLength > ESP8266_WIRE_BUFFER_LENGTH) {  
-    // read first 32 bytes
-    readEEPROM(eeaddress, dataPointer, ESP8266_WIRE_BUFFER_LENGTH);
-    // read the rest
-    readEEPROM(eeaddress+ESP8266_WIRE_BUFFER_LENGTH, dataPointer+ESP8266_WIRE_BUFFER_LENGTH, dataLength-ESP8266_WIRE_BUFFER_LENGTH);
-
-    // Do not execute this read
-    return;
-  }
-
-  byte returnCode;
-   
-  Wire.beginTransmission(EEPROM_ADDR);
-  Wire.write((uint8_t)(eeaddress >> 8));   // MSB
-  Wire.write((uint8_t)(eeaddress & 0xFF)); // LSB
-  returnCode = Wire.endTransmission();
-
-#ifdef DEBUG
-  if (returnCode > 0) {
-    Serial.println("Error "+String(returnCode)+" when reading from the EEPROM");
-  }
-#endif
- 
-  Wire.requestFrom((uint8_t)EEPROM_ADDR, dataLength);
-
-  returnCode = Wire.available();
-#ifdef DEBUG
-  if (returnCode != dataLength) {
-    Serial.println("Error during reading from the EEPROM. "+String(dataLength)+" bytes were requested, but only "+String(returnCode)+" are available");
-  }
-#endif  
-
-  for (byte i=0; i<dataLength;i++) {
-      if (Wire.available()){
-        *(dataPointer+i) = Wire.read();
-      }
-  }
-}
-
-void writeMeasurementInEEPROM(struct measurement *measureDatastore) {
-  // First read the counter
-  uint16_t counter;
-  readEEPROM(0, (byte*)&counter, sizeof(uint16_t));  
-  // Write in the next available slot
-  writeEEPROM( sizeof( uint16_t ) + counter++ * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
-  // Update the counter
-  writeEEPROM( 0, (byte*)&counter, sizeof(uint16_t));
-}
-
-void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore) {
-  readEEPROM(sizeof( uint16_t ) + measurementIndex * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
-}
-

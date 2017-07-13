@@ -11,4 +11,7 @@ struct measurement {
   uint16_t voltage;
 };
 
+void writeMeasurementInEEPROM(struct measurement *measureDatastore);
+
+void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore);
 #endif
