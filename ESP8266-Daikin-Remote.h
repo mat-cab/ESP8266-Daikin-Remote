@@ -1,7 +1,7 @@
 #ifndef ESP8266_DAIKIN_REMOTE_H_
 #define ESP8266_DAIKIN_REMOTE_H_
 
-#include "Measurement.h"
+#include "include/Measurement.h"
 
 void measureBattery(struct measurement *measureDatastore);
 

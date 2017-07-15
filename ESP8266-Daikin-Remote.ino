@@ -4,12 +4,13 @@
 #include "Time.h"
 
 // Project includes
-#include "CustomConstants.h"
-#include "I2C_Constants.h"
-#include "Measurement.h"
-#include "SHT31_Lib.h"
-#include "RTCMem_Lib.h"
-#include "EEPROM_Lib.h"
+#include "include/CustomConstants.h"
+#include "include/I2C_Constants.h"
+#include "include/Measurement.h"
+#include "include/SHT31_Lib.h"
+#include "include/RTCMem_Lib.h"
+#include "include/EEPROM_Lib.h"
+// Module include
 #include "ESP8266-Daikin-Remote.h"
 
 // Used for debug purposes
