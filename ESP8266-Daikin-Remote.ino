@@ -1,11 +1,9 @@
 // System includes
 #include "libraries/Time/Time.h"
-#include "Wire.h"
-//#include "ESP8266WiFi.h"
 
 // Project includes
 #include "include/CustomConstants.h"
-#include "include/I2C_Constants.h"
+#include "include/I2C_Lib.h"
 #include "include/Measurement.h"
 #include "include/SHT31_Lib.h"
 #include "include/RTCMem_Lib.h"
@@ -62,9 +60,8 @@ void setup() {
   // Init the pins for the battery measurement
   initializeBatteryMeasurement();
 
-  // Setup I2C connection
-  Wire.begin(ESP8266_SDA,ESP8266_SCL);
-  Wire.setClock(100000L);
+  // Init the I2C protocol
+  initializeI2C();
 
   // Now that time is set, update other less usefull values
   measurement measure;  
