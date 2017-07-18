@@ -6,10 +6,10 @@ To initialize the project, use the following command:
 
 # Build the project
 After having customized the project, use the following command:  
-`make -f makeEspArduino/makeEspArduino.mk flash`
+`make flash`
 
 # Customization
-The customization parameters are all set in the CustomConstants.h file.
+The customization parameters are all set in the CustomConstants.h file present in the include/ folder.
 This include the following parameters:
   * Wifi name and password
   * Thingspeak Channel ID and private key 
