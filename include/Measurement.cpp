@@ -1,6 +1,26 @@
 #include "Arduino.h"
 #include "EEPROM_Lib.h"
+#include "SHT31_Lib.h"
+#include "Battery_Lib.h"
 #include "Measurement.h"
+
+float getTemperature(struct measurement *measureDatastore) {
+  return (-45.0 + ( 175.0 * ( (measureDatastore->temperature[0] * 256) + measureDatastore->temperature[1] ) / 65535.0 ));
+}
+
+float getHumidity(struct measurement *measureDatastore) {
+  return ((100.0 * ( ( measureDatastore->humidity[0] * 256.0) + measureDatastore->humidity[1] ) ) / 65535.0);
+}
+
+float getVoltage(struct measurement *measureDatastore) {
+  return (measureDatastore->voltage/ 531.0 * 3.314);
+}
+
+void performMeasurement(struct measurement *measureDatastore, uint16_t currentIteration, float currentCycleFactor) {
+  measureDatastore->iterationMoment = currentIteration;
+  measureTemperatureHumidity(measureDatastore);
+  measureBattery(measureDatastore);
+}
 
 void writeMeasurementInEEPROM(struct measurement *measureDatastore) {
   // First read the counter
@@ -15,3 +35,21 @@ void writeMeasurementInEEPROM(struct measurement *measureDatastore) {
 void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore) {
   readEEPROM(sizeof( uint16_t ) + measurementIndex * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
 }
+
+#ifdef DEBUG
+void printMeasurementInSerial(struct measurement *measureDatastore) {
+  char fConverter[10];
+  
+  dtostrf(getTemperature(measureDatastore), 0, 2, fConverter);
+  sprintf(message,"Temperature : %s degC", fConverter);
+  Serial.println(message);  
+
+  dtostrf(getHumidity(measureDatastore), 0, 2, fConverter);
+  sprintf(message,"Humidity : %s %%HR", fConverter);
+  Serial.println(message);  
+
+  dtostrf(getVoltage(measureDatastore), 0, 3, fConverter);
+  sprintf(message,"Battery voltage : %s V", fConverter);
+  Serial.println(message);
+}
+#endif

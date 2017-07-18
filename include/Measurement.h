@@ -11,7 +11,20 @@ struct measurement {
   uint16_t voltage;
 };
 
+float getTemperature(struct measurement *measureDatastore);
+
+float getHumidity(struct measurement *measureDatastore);
+
+float getVoltage(struct measurement *measureDatastore);
+
+void performMeasurement(struct measurement *measureDatastore, uint16_t currentIteration, float currentCycleFactor);
+
 void writeMeasurementInEEPROM(struct measurement *measureDatastore);
 
 void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore);
+
+#ifdef DEBUG
+void printMeasurementInSerial(struct measurement *measureDatastore);
+#endif
+
 #endif
