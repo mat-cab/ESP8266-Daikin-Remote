@@ -2,6 +2,7 @@
 #define Measurement_H_
 
 #include "Arduino.h"
+#include "Debug.h"
 
 // structures for the meaasurement (stored in EEPROM)
 struct measurement {

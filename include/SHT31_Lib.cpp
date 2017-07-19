@@ -4,6 +4,7 @@
 
 #include "SHT31_Lib.h"
 #include "Measurement.h" 
+#include "Debug.h"
 
 void measureTemperatureHumidity(struct measurement *measureDatastore) {
   unsigned int data[6];
@@ -19,8 +20,7 @@ void measureTemperatureHumidity(struct measurement *measureDatastore) {
 
 #ifdef DEBUG
   if( returnCode > 0 ) {
-    sprintf(message, "Error %d while sending measurement command!", returnCode);
-    Serial.println(message);
+    Serial.println("Error "+String(returnCode)+" while sending measurement command!");
   }
 #endif  
 
@@ -34,8 +34,7 @@ void measureTemperatureHumidity(struct measurement *measureDatastore) {
 
 #ifdef DEBUG
   if( returnCode > 0 ) {
-    sprintf(message, "Error %d while asking for measurement data!", returnCode);
-    Serial.println(message);
+    Serial.println("Error "+String(returnCode)+" while asking for measurement data!");
   }
 #endif
   
@@ -56,8 +55,7 @@ void measureTemperatureHumidity(struct measurement *measureDatastore) {
     Wire.read();
   } else {
 #ifdef DEBUG    
-    sprintf(message, "Only %d data bytes available", returnCode);
-    Serial.println(message);
+    Serial.println("Only "+String(returnCode)+" data bytes available");
 #endif
     measureDatastore->temperature[0] = 0;
     measureDatastore->temperature[1] = 0;

@@ -7,4 +7,6 @@
 #define CYCLE_ITERATIONS 60
 #define CYCLE_FACTOR 1.02
 
+extern float *cycleFactor;
+
 #endif

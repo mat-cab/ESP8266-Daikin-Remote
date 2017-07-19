@@ -4,10 +4,12 @@
 #include "Arduino.h"
 
 // structures for the RTC memory
-struct {
+struct rtcRawDataDef {
   uint32_t crc32; 
   byte data[508];
-} rtcRawData;
+};
+
+extern rtcRawDataDef rtcRawData;
 
 struct rtcData {
   time_t timestamp;

@@ -1,6 +1,7 @@
 #include "Arduino.h"
 #include "Wire.h"
 #include "I2C_Lib.h"
+#include "Debug.h"
 #include "EEPROM_Lib.h"
 
 void writeEEPROM(uint16_t eeaddress, byte *data, uint8_t dataLength ) {

@@ -3,25 +3,18 @@
 #include "ESP8266WiFi.h"
 #include "WiFiClient.h"
 
+#include "../libraries/Time/Time.h"
 #include "CustomConstants.h"
 #include "EEPROM_Lib.h"
-#include <Time.h>
 #include "CycleConstants.h"
+#include "Debug.h"
 #include "Wifi_Lib.h"
 
 WiFiClient client;
 
-float *cycleFactor2;
-time_t *RTCtimestamp2;
-
 void initializeWifi() {
   // Power off Wifi
   WiFi.mode(WIFI_OFF);
-}
-
-void passWifiVariables(float *cFactor, time_t *timestamp) {
-  cycleFactor2 = cFactor;
-  RTCtimestamp2 = timestamp;
 }
 
 void sendWifi() {
@@ -215,7 +208,7 @@ void jsonUpdate(String *jsonBuf) {
 
 void jsonAddEntry(String* buf, struct measurement *measureDatastore) {
   char sTemp[6], sHumidity[6], sVoltage[7], sFactor[8];
-  time_t measurementTime = *RTCtimestamp2 + measureDatastore->iterationMoment * CYCLE_TIME / 1000;
+  time_t measurementTime = *RTCtimestamp + measureDatastore->iterationMoment * CYCLE_TIME / 1000;
   
   dtostrf(getTemperature(measureDatastore), 5, 2, sTemp);
   dtostrf(getHumidity(measureDatastore), 5, 2, sHumidity);
@@ -287,16 +280,16 @@ void updateTime(String timestamp) {
   int32_t shift =  newTime - lastTimestamp;
 
   // Adjust cycle factor
-  if (*cycleFactor2 == 0.0) {
-    *cycleFactor2 = CYCLE_FACTOR;
+  if (*cycleFactor == 0.0) {
+    *cycleFactor = CYCLE_FACTOR;
   } else {
-    *cycleFactor2 -= (float)shift * 1000.0 / (float)(CYCLE_TIME * CYCLE_ITERATIONS);
+    *cycleFactor -= (float)shift * 1000.0 / (float)(CYCLE_TIME * CYCLE_ITERATIONS);
   }  
 
 #ifdef DEBUG
   Serial.println("Shift was: "+String(shift)+" seconds");
-  Serial.println("Adjusted cycle factor: " + String(*cycleFactor2));
+  Serial.println("Adjusted cycle factor: " + String(*cycleFactor));
 #endif      
 
-  *RTCtimestamp2 = newTime - (uint32_t)((currentMillis - 1000)/1000);
+  *RTCtimestamp = newTime - (uint32_t)((currentMillis - 1000)/1000);
 }

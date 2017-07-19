@@ -1,6 +1,8 @@
 #include "Arduino.h"
 #include "RTCMem_Lib.h"
 
+rtcRawDataDef rtcRawData;
+
 int32_t calculateCRC32(const uint8_t *data, size_t length)
 {
   uint32_t crc = 0xffffffff;

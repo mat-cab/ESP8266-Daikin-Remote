@@ -11,10 +11,7 @@
 #include "include/Battery_Lib.h"
 #include "include/Wifi_Lib.h"
 #include "include/CycleConstants.h"
-
-// Used for debug purposes
-// Comment for production
-//#define DEBUG
+#include "include/Debug.h"
 
 char message[128];
 
@@ -67,9 +64,6 @@ void setup() {
   measurement measure;  
   uint16_t EEPROMcounter = 0;  
   cycleFactor = &(RTCdata->cycle_factor);  
-
-  // FIXME: Pass the variables to the Wifi Lib
-  passWifiVariables( cycleFactor, RTCtimestamp );
 
   // In case of reset, fix the initial values
   if (corruptedRTCmem) {  
