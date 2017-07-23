@@ -36,10 +36,7 @@ void setup() {
   // If memory is corrupted
   if (corruptedRTCmem) {
     // Set iteration to last one of the cycle to force an autoupdate
-    *iteration = CYCLE_ITERATIONS - 1;
-    
-    // Also send to debug
-    debug("RTC memory is corrupted");
+    *iteration = CYCLE_ITERATIONS - 1;  
   }
 
   // Set the estimated local time
@@ -61,6 +58,9 @@ void setup() {
 
   // In case of reset, fix the initial values
   if (corruptedRTCmem) {  
+    // Also send to debug
+    debug("RTC memory is corrupted");
+
     // also reset the cycleFactor to 0.0 (will be updated when time is updated)
     *cycleFactor = 0.0;
 
