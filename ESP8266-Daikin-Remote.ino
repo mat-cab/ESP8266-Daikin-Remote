@@ -10,7 +10,7 @@
 #include "include/Measurement.h"
 #include "include/SHT31_Lib.h"
 #include "include/RTCMem_Lib.h"
-#include "include/EEPROM_Lib.h"
+#include "include/EEPROM_Measurement_Lib.h"
 #include "include/Battery_Lib.h"
 #include "include/Wifi_Lib.h"
 #include "include/CycleManager_Lib.h"
@@ -46,7 +46,6 @@ void setup() {
 
   // Now that time is set, update other less usefull values
   measurement measure;  
-  uint16_t EEPROMcounter = 0;
   iteration = getRTCPointer_iteration();
 
   // In case of reset, fix the initial values
@@ -54,8 +53,8 @@ void setup() {
     // Also send to debug
     debug("RTC memory is corrupted");
 
-    // Set the EEPROM counter to 0
-    writeEEPROM(0,(byte*)&EEPROMcounter,sizeof(uint16_t));
+    // reset the EEPROM
+    resetEEPROM();
   }  
     
   // Pause before looping
@@ -79,9 +78,8 @@ void setup() {
     // Send the data with Wifi
     sendWifi();
 
-    // reset the counter in EEPROM to 0
-    EEPROMcounter = 0;
-    writeEEPROM(0,(byte*)&EEPROMcounter,sizeof(uint16_t));    
+    // reset the EEPROM
+    resetEEPROM(); 
   }
 
   // Send message to debug
