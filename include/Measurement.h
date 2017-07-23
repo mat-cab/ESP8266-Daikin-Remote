@@ -2,7 +2,6 @@
 #define Measurement_H_
 
 #include "Arduino.h"
-#include "Debug.h"
 
 // structures for the meaasurement (stored in EEPROM)
 struct measurement {
@@ -23,9 +22,5 @@ void performMeasurement(struct measurement *measureDatastore, uint16_t currentIt
 void writeMeasurementInEEPROM(struct measurement *measureDatastore);
 
 void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore);
-
-#ifdef DEBUG
-void printMeasurementInSerial(struct measurement *measureDatastore);
-#endif
 
 #endif

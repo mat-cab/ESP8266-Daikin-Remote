@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "Wire.h"
 #include "I2C_Lib.h"
-#include "Debug.h"
+#include "Debug_Lib.h"
 #include "EEPROM_Lib.h"
 
 void writeEEPROM(uint16_t eeaddress, byte *data, uint8_t dataLength ) {
@@ -26,11 +26,10 @@ void writeEEPROM(uint16_t eeaddress, byte *data, uint8_t dataLength ) {
 
     returnCode = Wire.endTransmission();
 
-#ifdef DEBUG
+    // Analyse error
     if (returnCode > 0) {
-      Serial.println("Error "+String(returnCode)+" when writing to the EEPROM");
+      debug("Error "+String(returnCode)+" when writing to the EEPROM");
     }
-#endif
     // update the number of data written
     writtenData += dataWriteLength;
 
@@ -62,20 +61,17 @@ void readEEPROM(uint16_t eeaddress, byte* dataPointer, uint8_t dataLength) {
   Wire.write((uint8_t)(eeaddress & 0xFF)); // LSB
   returnCode = Wire.endTransmission();
 
-#ifdef DEBUG
   if (returnCode > 0) {
-    Serial.println("Error "+String(returnCode)+" when reading from the EEPROM");
+    debug("Error "+String(returnCode)+" when reading from the EEPROM");
   }
-#endif
  
   Wire.requestFrom((uint8_t)EEPROM_ADDR, dataLength);
 
   returnCode = Wire.available();
-#ifdef DEBUG
+
   if (returnCode != dataLength) {
-    Serial.println("Error during reading from the EEPROM. "+String(dataLength)+" bytes were requested, but only "+String(returnCode)+" are available");
+    debug("Error during reading from the EEPROM. "+String(dataLength)+" bytes were requested, but only "+String(returnCode)+" are available");
   }
-#endif  
 
   for (byte i=0; i<dataLength;i++) {
       if (Wire.available()){

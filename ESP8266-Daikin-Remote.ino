@@ -1,4 +1,7 @@
 // System includes
+#include "Arduino.h"
+
+// External lib includes
 #include "libraries/Time/Time.h"
 
 // Project includes
@@ -11,9 +14,7 @@
 #include "include/Battery_Lib.h"
 #include "include/Wifi_Lib.h"
 #include "include/CycleConstants.h"
-#include "include/Debug.h"
-
-char message[128];
+#include "include/Debug_Lib.h"
 
 float *cycleFactor;
 time_t *RTCtimestamp;  
@@ -44,15 +45,8 @@ void setup() {
   // Set the estimated local time
   setTime( *RTCtimestamp + (time_t)(CYCLE_TIME*(*iteration + 1)/1000));  
 
-#ifdef DEBUG
-  // Setup serial
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println("ESP8266 starting - Time is "+String(weekday())+" "+String(day())+"/"+String(month())+"/"+String(year())+" "+String(hour())+":"+String(minute())+":"+String(second()));
-  if (corruptedRTCmem) {
-    Serial.println("RTC memory is corrupted");
-  }
-#endif
+  // Init the debug
+  initializeDebug();
 
   // Init the pins for the battery measurement
   initializeBatteryMeasurement();
@@ -71,39 +65,29 @@ void setup() {
       *cycleFactor = 0.0;
       // Set the EEPROM counter to 0
       writeEEPROM(0,(byte*)&EEPROMcounter,sizeof(uint16_t));
+
+      // Also send to debug
+      debug("RTC memory is corrupted");
   }  
     
   // Pause before looping
   delay(100);
 
-#ifdef DEBUG
-  Serial.println("Performing measurements ...");
-#endif
+  // Send debug message
+  debug("Performing measurements ...");
 
+  // Perform the measurements
   performMeasurement(&measure, *iteration, *cycleFactor);
 
-#ifdef DEBUG
-  printMeasurementInSerial(&measure);
+  // Send to debug
+  debug(&measure);
+  debug("Saving in EEPROM...");
 
-  Serial.println("Saving in EEPROM...");
-#endif
-
+  // Save the measurement in EEPROM
   writeMeasurementInEEPROM(&measure);
 
+  // If at end of cycle
   if ( *iteration == CYCLE_ITERATIONS - 1 ) {
-#ifdef DEBUG
-    readEEPROM(0, (byte*)&EEPROMcounter, sizeof(uint16_t));
-    struct measurement recordedMeasure;
-    Serial.println("Content of the EEPROM:");
-    Serial.println("Counter: "+String(EEPROMcounter));
-    for (uint16_t i=0; i<EEPROMcounter; i++) {
-      readMeasurementFromEEPROM(i, &recordedMeasure);
-      Serial.println("Measurement "+String(i)+" out of "+String(EEPROMcounter)+" :");
-      printMeasurementInSerial(&recordedMeasure);
-      Serial.println("--------------------");
-    }
-#endif
-    
     // Send the data with Wifi
     sendWifi();
 
@@ -112,13 +96,11 @@ void setup() {
     writeEEPROM(0,(byte*)&EEPROMcounter,sizeof(uint16_t));    
   }
 
-#ifdef DEBUG
-  Serial.println("*** End of iteration "+ String(*iteration) +" - Time is "+String(weekday())+" "+String(day())+"/"+String(month())+"/"+String(year())+" "+String(hour())+":"+String(minute())+":"+String(second())+" ***");
+  // Send message to debug
+  debug("*** End of iteration "+ String(*iteration) +" - Time is "+String(weekday())+" "+String(day())+"/"+String(month())+"/"+String(year())+" "+String(hour())+":"+String(minute())+":"+String(second())+" ***");
 
-  Serial.flush();
-
-  Serial.end();    
-#endif
+  // Close the debug
+  endDebug();
 
   // Compute remaining time (in case of cycle overflow)
   *iteration = *iteration + (1 + millis() / CYCLE_TIME);

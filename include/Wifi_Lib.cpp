@@ -7,7 +7,7 @@
 #include "CustomConstants.h"
 #include "EEPROM_Lib.h"
 #include "CycleConstants.h"
-#include "Debug.h"
+#include "Debug_Lib.h"
 #include "Wifi_Lib.h"
 
 WiFiClient client;
@@ -28,23 +28,17 @@ void sendWifi() {
   // Connect to Wifi
   WiFi.begin(WIFI_SSID, WIFI_PASSWD);
 
-#ifdef DEBUG
   // Output message
-  Serial.println("Trying to connect to Wifi...");
-#endif
+  debug("Trying to connect to Wifi...");
 
   // Wait until connected
   while (WiFi.status() != WL_CONNECTED) {
     delay(WIFI_WAIT);
-#ifdef DEBUG
-    Serial.println("Waiting for connection...");
-#endif
+    debug("Waiting for connection...");
   }
 
-#ifdef DEBUG
   // Output message
-  Serial.println("Connected to Wifi!");
-#endif
+  debug("Connected to Wifi!");
 
   // Connect to server
   while (client.connect(IOT_SERVER, IOT_PORT) && retry) {
@@ -72,11 +66,10 @@ void sendWifi() {
     // Also add the comas between the records
     uint32_t dataLength = jsonBufferInitialLength + EEPROMcounter * jsonEntryLength + (EEPROMcounter-1) + 4;
     
-#ifdef DEBUG
     // Output message
-    Serial.println("Sending the update request...");
-    Serial.println("JSON data is following (length is "+String(dataLength)+" bytes for "+EEPROMcounter+" records)");
-#endif
+    debug("Sending the update request...");
+    debug("JSON data is following (length is "+String(dataLength)+" bytes for "+EEPROMcounter+" records)");
+
     delay(WIFI_WAIT);
 
     uint16_t writtenData = 0, totalWrittenData = 0;
@@ -96,15 +89,15 @@ void sendWifi() {
       jsonBuffer += ",";
       // If next entry does not fit current buffer, send actual buffer
       if ( jsonBuffer.length() + jsonEntryLength > JSON_BUFFER_MAX_LENGTH ) {
-#ifdef DEBUG
-        Serial.println(jsonBuffer);
-#endif
+        // Send to debug
+        debug(jsonBuffer);
+
         writtenData = client.print(jsonBuffer);
-#ifdef DEBUG        
+
         if ( writtenData != jsonBuffer.length()) {
-          Serial.println("Error: sent data : "+String(jsonBuffer.length())+" - written data : "+writtenData);
+          debug("Error: sent data : "+String(jsonBuffer.length())+" - written data : "+writtenData);
         }
-#endif
+
         totalWrittenData += writtenData;
         
         jsonBuffer = "";
@@ -118,35 +111,29 @@ void sendWifi() {
 
     // Write the end of the JSON data
     jsonBuffer += "]}";
+
+    debug(jsonBuffer);
+
     writtenData = client.println(jsonBuffer);
-#ifdef DEBUG
-    Serial.println(jsonBuffer);
             
     if ( writtenData != jsonBuffer.length() + 2) {
-      Serial.println("Error in last write: sent data : "+String(jsonBuffer.length()+2)+" - written data : "+writtenData);
+      debug("Error in last write: sent data : "+String(jsonBuffer.length()+2)+" - written data : "+writtenData);
     }
-#endif
-    totalWrittenData += writtenData;    
-#ifdef DEBUG
-    Serial.println("Total data written: "+String(totalWrittenData)+" out of "+dataLength+" expected");
-#endif    
 
-#ifdef DEBUG
-    Serial.println("Request sent!");
-#endif
+    totalWrittenData += writtenData;    
+
+    debug("Total data written: "+String(totalWrittenData)+" out of "+dataLength+" expected");
+
+    debug("Request sent!");
 
     // Wait for the client response
     while( !client.available() ) {
-#ifdef DEBUG      
-      Serial.println("Waiting for response...");
-#endif
+      debug("Waiting for response...");
       
       delay(WIFI_WAIT);
     }
 
-#ifdef DEBUG
-    Serial.println("Response received!");
-#endif
+    debug("Response received!");
 
     // Output its response
     while (client.connected()) {
@@ -158,25 +145,21 @@ void sendWifi() {
           // Do retry if return code is different from 202, which means OK
           retry = (str.substring(9,12) != "202");
 
-#ifdef DEBUG
           if (retry) {
-            Serial.println("Error reply was: "+str);
+            debug("Error reply was: "+str);
           }
-#endif
         } else if (str.startsWith("Date: ")) {
             updateTime( str.substring(6) );
         }
       }     
     }
 
-#ifdef DEBUG
     if ( retry ) {
       // There was an error
-      Serial.println("Error while sending the request");
+      debug("Error while sending the request");
     } else {
-      Serial.println("Request sucessfully sent!");
+      debug("Request sucessfully sent!");
     }
-#endif
   }
 
   // Switch the WIFI off
@@ -286,10 +269,8 @@ void updateTime(String timestamp) {
     *cycleFactor -= (float)shift * 1000.0 / (float)(CYCLE_TIME * CYCLE_ITERATIONS);
   }  
 
-#ifdef DEBUG
-  Serial.println("Shift was: "+String(shift)+" seconds");
-  Serial.println("Adjusted cycle factor: " + String(*cycleFactor));
-#endif      
+  debug("Shift was: "+String(shift)+" seconds");
+  debug("Adjusted cycle factor: " + String(*cycleFactor)); 
 
   *RTCtimestamp = newTime - (uint32_t)((currentMillis - 1000)/1000);
 }

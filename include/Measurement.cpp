@@ -2,7 +2,6 @@
 #include "EEPROM_Lib.h"
 #include "SHT31_Lib.h"
 #include "Battery_Lib.h"
-#include "Debug.h"
 #include "Measurement.h"
 
 float getTemperature(struct measurement *measureDatastore) {
@@ -36,18 +35,3 @@ void writeMeasurementInEEPROM(struct measurement *measureDatastore) {
 void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore) {
   readEEPROM(sizeof( uint16_t ) + measurementIndex * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
 }
-
-#ifdef DEBUG
-void printMeasurementInSerial(struct measurement *measureDatastore) {
-  char fConverter[10]; 
-  
-  dtostrf(getTemperature(measureDatastore), 0, 2, fConverter);
-  Serial.println( "Temperature : "+String(fConverter)+" degC");
-
-  dtostrf(getHumidity(measureDatastore), 0, 2, fConverter);
-  Serial.println("Humidity : "+String(fConverter)+" %HR");  
-
-  dtostrf(getVoltage(measureDatastore), 0, 3, fConverter);
-  Serial.println("Battery voltage : "+String(fConverter)+" V");
-}
-#endif

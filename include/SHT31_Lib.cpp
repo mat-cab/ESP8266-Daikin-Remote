@@ -4,7 +4,7 @@
 
 #include "SHT31_Lib.h"
 #include "Measurement.h" 
-#include "Debug.h"
+#include "Debug_Lib.h"
 
 void measureTemperatureHumidity(struct measurement *measureDatastore) {
   unsigned int data[6];
@@ -18,11 +18,9 @@ void measureTemperatureHumidity(struct measurement *measureDatastore) {
   // End transmission
   returnCode = Wire.endTransmission(false);
 
-#ifdef DEBUG
   if( returnCode > 0 ) {
-    Serial.println("Error "+String(returnCode)+" while sending measurement command!");
+    debug("Error "+String(returnCode)+" while sending measurement command!");
   }
-#endif  
 
   // Wait for the data refresh
   delay(SHT31_DELAY);
@@ -32,11 +30,9 @@ void measureTemperatureHumidity(struct measurement *measureDatastore) {
   // No command word
   returnCode = Wire.endTransmission(false);
 
-#ifdef DEBUG
   if( returnCode > 0 ) {
-    Serial.println("Error "+String(returnCode)+" while asking for measurement data!");
+    debug("Error "+String(returnCode)+" while asking for measurement data!");
   }
-#endif
   
   // Ask for data words from SHT31
   Wire.requestFrom((uint8_t)SHT31_ADDR, (uint8_t)6);
@@ -54,13 +50,11 @@ void measureTemperatureHumidity(struct measurement *measureDatastore) {
     // Drop the next byte (checksum ?)
     Wire.read();
   } else {
-#ifdef DEBUG    
-    Serial.println("Only "+String(returnCode)+" data bytes available");
-#endif
+
+    debug("Only "+String(returnCode)+" data bytes available");
     measureDatastore->temperature[0] = 0;
     measureDatastore->temperature[1] = 0;
     measureDatastore->humidity[0] = 0;
     measureDatastore->humidity[1] = 0;    
   }
 }
-
