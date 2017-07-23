@@ -17,7 +17,7 @@ float getHumidity(struct measurement *measureDatastore);
 
 float getVoltage(struct measurement *measureDatastore);
 
-void performMeasurement(struct measurement *measureDatastore, uint16_t currentIteration, float currentCycleFactor);
+void performMeasurement(struct measurement *measureDatastore, uint16_t currentIteration);
 
 void writeMeasurementInEEPROM(struct measurement *measureDatastore);
 

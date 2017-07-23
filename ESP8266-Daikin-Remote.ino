@@ -13,11 +13,8 @@
 #include "include/EEPROM_Lib.h"
 #include "include/Battery_Lib.h"
 #include "include/Wifi_Lib.h"
-#include "include/CycleConstants.h"
+#include "include/CycleManager_Lib.h"
 #include "include/Debug_Lib.h"
-
-float *cycleFactor;
-time_t *RTCtimestamp;  
 
 void setup() {
   // Save the power
@@ -29,21 +26,17 @@ void setup() {
   // Read the RTC memory
   bool corruptedRTCmem = readRTCmemory();
 
-  // Set the appropriate pointers
-  RTCtimestamp = getRTCPointer_timestamp();
-  iteration = getRTCPointer_iteration();
-
-  // If memory is corrupted
-  if (corruptedRTCmem) {
-    // Set iteration to last one of the cycle to force an autoupdate
-    *iteration = CYCLE_ITERATIONS - 1;  
-  }
-
-  // Set the estimated local time
-  setTime( *RTCtimestamp + (time_t)(CYCLE_TIME*(*iteration + 1)/1000));  
+  // initialize the cycleManager
+  initializeCycleManager();
 
   // Init the debug
   initializeDebug();
+
+  // If memory is corrupted
+  if (corruptedRTCmem) {
+    // reset the cycle manager (force an autoupdate)
+    resetCycleManager();
+  }
 
   // Init the pins for the battery measurement
   initializeBatteryMeasurement();
@@ -53,16 +46,13 @@ void setup() {
 
   // Now that time is set, update other less usefull values
   measurement measure;  
-  uint16_t EEPROMcounter = 0;  
-  cycleFactor = getRTCPointer_cycleFactor();  
+  uint16_t EEPROMcounter = 0;
+  iteration = getRTCPointer_iteration();
 
   // In case of reset, fix the initial values
   if (corruptedRTCmem) {  
     // Also send to debug
     debug("RTC memory is corrupted");
-
-    // also reset the cycleFactor to 0.0 (will be updated when time is updated)
-    *cycleFactor = 0.0;
 
     // Set the EEPROM counter to 0
     writeEEPROM(0,(byte*)&EEPROMcounter,sizeof(uint16_t));
@@ -75,7 +65,7 @@ void setup() {
   debug("Performing measurements ...");
 
   // Perform the measurements
-  performMeasurement(&measure, *iteration, *cycleFactor);
+  performMeasurement(&measure, *iteration);
 
   // Send to debug
   debug(&measure);
@@ -100,19 +90,14 @@ void setup() {
   // Close the debug
   endDebug();
 
-  // Compute remaining time (in case of cycle overflow)
-  *iteration = *iteration + (1 + millis() / CYCLE_TIME);
-  uint32_t waitMillis = CYCLE_TIME * (1 + millis() / CYCLE_TIME);
-  uint32_t waitMicros = (waitMillis*1000-micros())*(*cycleFactor);
-
-  // Compute new iteration
-  *iteration =  *iteration % CYCLE_ITERATIONS;
+  // Update the cycle manager
+  updateCycleManager();
 
   // Write the RTC memory data
   writeRTCmem();  
   
-  // Go do deepsleep
-  ESP.deepSleep(waitMicros);
+  // Go do deepsleep until the cycle manager says so
+  ESP.deepSleep(getNextCycle());
 }
 
 void loop() {

@@ -16,7 +16,7 @@ float getVoltage(struct measurement *measureDatastore) {
   return (measureDatastore->voltage/ 531.0 * 3.314);
 }
 
-void performMeasurement(struct measurement *measureDatastore, uint16_t currentIteration, float currentCycleFactor) {
+void performMeasurement(struct measurement *measureDatastore, uint16_t currentIteration) {
   measureDatastore->iterationMoment = currentIteration;
   measureTemperatureHumidity(measureDatastore);
   measureBattery(measureDatastore);
