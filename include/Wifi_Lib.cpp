@@ -13,9 +13,6 @@
 
 WiFiClient client;
 
-time_t *RTCtimestamp2;
-float *cycleFactor2;
-
 void initializeWifi() {
   // Power off Wifi
   WiFi.mode(WIFI_OFF);
@@ -25,10 +22,6 @@ void sendWifi() {
   char header[100];
   String jsonBuffer;
   bool retry = true;
-
-  // Initialize the pointer from RTC memory
-  RTCtimestamp2 = getRTCPointer_timestamp();
-  cycleFactor2 = getRTCPointer_cycleFactor();
  
   // Activate Wifi
   WiFi.mode(WIFI_STA);
@@ -199,86 +192,11 @@ void jsonUpdate(String *jsonBuf) {
 
 void jsonAddEntry(String* buf, struct measurement *measureDatastore) {
   char sTemp[6], sHumidity[6], sVoltage[7], sFactor[8];
-  time_t measurementTime = *RTCtimestamp2 + measureDatastore->iterationMoment * CYCLE_TIME / 1000;
+  time_t measurementTime = getMeasurementTime( measureDatastore );
   
   dtostrf(getTemperature(measureDatastore), 5, 2, sTemp);
   dtostrf(getHumidity(measureDatastore), 5, 2, sHumidity);
   dtostrf(getVoltage(measureDatastore), 5, 3, sVoltage);
   
   *buf += "{\"created_at\":\""+String(measurementTime)+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
-}
-
-void updateTime(String timestamp) {
-  time_t lastTimestamp = now();
-  uint32_t currentMillis = millis();
-  
-  TimeElements newTimeTE;
-  time_t newTime;
-
-  // month conversion from String to int
-  int month;
-  String monthString = timestamp.substring(8,11);
-
-  if ( monthString == "Jan" ) {
-      month = 1;
-  } else if ( monthString == "Feb") {
-      month = 2;
-  } else if ( monthString == "Mar") {
-      month = 3;
-  } else if ( monthString == "Apr") {
-      month = 4;
-  } else if ( monthString == "May") {
-      month = 5;
-  } else if ( monthString == "Jun") {
-      month = 6;
-  } else if ( monthString == "Jul") {
-      month = 7;
-  } else if ( monthString == "Aug") {
-      month = 8;
-  } else if ( monthString == "Sep") { 
-      month = 9;
-  } else if ( monthString == "Oct") {
-      month = 10;
-  } else if ( monthString == "Nov") {
-      month = 11;
-  } else if ( monthString == "Dec") {
-      month = 12;
-  } else {
-    month = 0;
-  }  
-
-  // Compute the new time
-  newTimeTE.Year = timestamp.substring(12,16).toInt()-1970;
-  newTimeTE.Month = month;
-  newTimeTE.Day = timestamp.substring(5,7).toInt();
-  newTimeTE.Hour = timestamp.substring(17,19).toInt();
-  newTimeTE.Minute = timestamp.substring(20,22).toInt();
-  newTimeTE.Second = timestamp.substring(23,25).toInt();
-  newTime = makeTime(newTimeTE);
-
-  // Adjust with the time zone
-  int32_t zoneShift = TIMEZONE.substring(1,3).toInt() * 3600 + TIMEZONE.substring(3,5).toInt() * 60;
-  if ( TIMEZONE.substring(0,1).equals("-") ) {
-    newTime -= zoneShift;
-  } else {
-    newTime += zoneShift;
-  }
-  
-  // Set the new time
-  setTime(newTime);
-
-  // Compute shift between two dates
-  int32_t shift =  newTime - lastTimestamp;
-
-  // Adjust cycle factor
-  if (*cycleFactor2 == 0.0) {
-    *cycleFactor2 = CYCLE_FACTOR;
-  } else {
-    *cycleFactor2 -= (float)shift * 1000.0 / (float)(CYCLE_TIME * CYCLE_ITERATIONS);
-  }  
-
-  debug("Shift was: "+String(shift)+" seconds");
-  debug("Adjusted cycle factor: " + String(*cycleFactor2)); 
-
-  *RTCtimestamp2 = newTime - (uint32_t)((currentMillis - 1000)/1000);
 }

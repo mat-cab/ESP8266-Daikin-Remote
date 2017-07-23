@@ -14,4 +14,8 @@ void resetCycleManager();
 void updateCycleManager();
 
 uint32_t getNextCycle();
+
+void updateTime(String timestamp); 
+
+time_t getMeasurementTime(struct measurement * measure);
 #endif

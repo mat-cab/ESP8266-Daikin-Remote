@@ -23,7 +23,4 @@ void sendWifi();
 void jsonUpdate(String *jsonBuf);
 
 void jsonAddEntry(String* buf, struct measurement *measureDatastore);
-
-void updateTime(String timestamp);
-
 #endif
