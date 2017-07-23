@@ -25,21 +25,21 @@ void setup() {
 
   // Initial declaration
   uint16_t *iteration;
-  struct rtcData *RTCdata;  
 
-  // Read the whole RTC memory
-  ESP.rtcUserMemoryRead(0, (uint32_t*) &rtcRawData, sizeof(rtcRawData));
+  // Read the RTC memory
+  bool corruptedRTCmem = readRTCmemory();
 
   // Set the appropriate pointers
-  RTCdata = (struct rtcData*)&(rtcRawData.data);
-  RTCtimestamp = &(RTCdata->timestamp);
-  iteration = &(RTCdata->iteration);
+  RTCtimestamp = getRTCPointer_timestamp();
+  iteration = getRTCPointer_iteration();
 
-  // Verify the CRC
-  boolean corruptedRTCmem = (rtcRawData.crc32 != getRTCmemCRC());
+  // If memory is corrupted
   if (corruptedRTCmem) {
-    // if not consistent, consider last iteration to update time
+    // Set iteration to last one of the cycle to force an autoupdate
     *iteration = CYCLE_ITERATIONS - 1;
+    
+    // Also send to debug
+    debug("RTC memory is corrupted");
   }
 
   // Set the estimated local time
@@ -57,17 +57,15 @@ void setup() {
   // Now that time is set, update other less usefull values
   measurement measure;  
   uint16_t EEPROMcounter = 0;  
-  cycleFactor = &(RTCdata->cycle_factor);  
+  cycleFactor = getRTCPointer_cycleFactor();  
 
   // In case of reset, fix the initial values
   if (corruptedRTCmem) {  
-      // also reset the cycleFactor to 0.0 (will be updated when time is updated)
-      *cycleFactor = 0.0;
-      // Set the EEPROM counter to 0
-      writeEEPROM(0,(byte*)&EEPROMcounter,sizeof(uint16_t));
+    // also reset the cycleFactor to 0.0 (will be updated when time is updated)
+    *cycleFactor = 0.0;
 
-      // Also send to debug
-      debug("RTC memory is corrupted");
+    // Set the EEPROM counter to 0
+    writeEEPROM(0,(byte*)&EEPROMcounter,sizeof(uint16_t));
   }  
     
   // Pause before looping

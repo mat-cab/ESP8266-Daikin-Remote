@@ -8,9 +8,13 @@
 #include "EEPROM_Lib.h"
 #include "CycleConstants.h"
 #include "Debug_Lib.h"
+#include "RTCMem_Lib.h"
 #include "Wifi_Lib.h"
 
 WiFiClient client;
+
+time_t *RTCtimestamp2;
+float *cycleFactor2;
 
 void initializeWifi() {
   // Power off Wifi
@@ -21,6 +25,10 @@ void sendWifi() {
   char header[100];
   String jsonBuffer;
   bool retry = true;
+
+  // Initialize the pointer from RTC memory
+  RTCtimestamp2 = getRTCPointer_timestamp();
+  cycleFactor2 = getRTCPointer_cycleFactor();
  
   // Activate Wifi
   WiFi.mode(WIFI_STA);
@@ -191,7 +199,7 @@ void jsonUpdate(String *jsonBuf) {
 
 void jsonAddEntry(String* buf, struct measurement *measureDatastore) {
   char sTemp[6], sHumidity[6], sVoltage[7], sFactor[8];
-  time_t measurementTime = *RTCtimestamp + measureDatastore->iterationMoment * CYCLE_TIME / 1000;
+  time_t measurementTime = *RTCtimestamp2 + measureDatastore->iterationMoment * CYCLE_TIME / 1000;
   
   dtostrf(getTemperature(measureDatastore), 5, 2, sTemp);
   dtostrf(getHumidity(measureDatastore), 5, 2, sHumidity);
@@ -263,14 +271,14 @@ void updateTime(String timestamp) {
   int32_t shift =  newTime - lastTimestamp;
 
   // Adjust cycle factor
-  if (*cycleFactor == 0.0) {
-    *cycleFactor = CYCLE_FACTOR;
+  if (*cycleFactor2 == 0.0) {
+    *cycleFactor2 = CYCLE_FACTOR;
   } else {
-    *cycleFactor -= (float)shift * 1000.0 / (float)(CYCLE_TIME * CYCLE_ITERATIONS);
+    *cycleFactor2 -= (float)shift * 1000.0 / (float)(CYCLE_TIME * CYCLE_ITERATIONS);
   }  
 
   debug("Shift was: "+String(shift)+" seconds");
-  debug("Adjusted cycle factor: " + String(*cycleFactor)); 
+  debug("Adjusted cycle factor: " + String(*cycleFactor2)); 
 
-  *RTCtimestamp = newTime - (uint32_t)((currentMillis - 1000)/1000);
+  *RTCtimestamp2 = newTime - (uint32_t)((currentMillis - 1000)/1000);
 }

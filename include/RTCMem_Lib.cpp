@@ -1,10 +1,25 @@
 #include "Arduino.h"
 #include "RTCMem_Lib.h"
 
-rtcRawDataDef rtcRawData;
+struct rtcData *RTCdata;
 
-int32_t calculateCRC32(const uint8_t *data, size_t length)
-{
+bool readRTCmemory() {
+  boolean corruptedMem;
+
+  // Read the whole RTC memory
+  ESP.rtcUserMemoryRead(0, (uint32_t*) &rtcRawData, sizeof(rtcRawData));
+
+  // Find whether RTC memory is corrupted or not
+  corruptedMem = (rtcRawData.crc32 != getRTCmemCRC());
+
+  // Initialize pointers for correct structure
+  RTCdata = (struct rtcData*)&(rtcRawData.data);
+
+  // return whether RTC memory is corrupted
+  return corruptedMem;
+}
+
+int32_t calculateCRC32(const uint8_t *data, size_t length) {
   uint32_t crc = 0xffffffff;
   while (length--) {
     uint8_t c = *data++;
@@ -26,11 +41,21 @@ int32_t getRTCmemCRC() {
   return calculateCRC32(((uint8_t*) &rtcRawData) + 4, sizeof(rtcRawData) - 4);
 }
 
-void writeRTCmem()
-{
+void writeRTCmem() {
   // Update CRC32 of data
   rtcRawData.crc32 = getRTCmemCRC();
   // Write struct to RTC memory
   ESP.rtcUserMemoryWrite(0, (uint32_t*) &rtcRawData, sizeof(rtcRawData));
 }
 
+time_t * getRTCPointer_timestamp() {
+  return &(RTCdata->timestamp);
+}
+
+uint16_t * getRTCPointer_iteration() {
+  return &(RTCdata->iteration);
+}
+
+float * getRTCPointer_cycleFactor() {
+  return &(RTCdata->cycle_factor);
+}
