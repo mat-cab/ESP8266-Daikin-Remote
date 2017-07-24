@@ -17,3 +17,6 @@ This include the following parameters:
 # Dependencies
 This project is dependent on the makeEspArduino available here:  
 https://github.com/plerup/makeEspArduino
+
+It is also dependent on the IRremoteESP8266 library available here:  
+https://github.com/markszabo/IRremoteESP8266
