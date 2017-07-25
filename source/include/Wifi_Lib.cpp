@@ -3,7 +3,7 @@
 #include "ESP8266WiFi.h"
 #include "WiFiClient.h"
 
-#include "../libraries/Time/Time.h"
+#include "Time.h"
 #include "CustomConstants.h"
 #include "EEPROM_Lib.h"
 #include "CycleManager_Lib.h"

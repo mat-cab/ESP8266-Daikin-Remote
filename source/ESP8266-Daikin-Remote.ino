@@ -2,7 +2,7 @@
 #include "Arduino.h"
 
 // External lib includes
-#include "libraries/Time/Time.h"
+#include "Time.h"
 
 // Project includes
 #include "include/CustomConstants.h"
