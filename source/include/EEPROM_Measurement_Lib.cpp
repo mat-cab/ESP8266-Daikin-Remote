@@ -21,7 +21,7 @@ uint16_t readEEPROMCounter() {
 
 void writeEEPROMCounter(uint16_t newCounter) {
   // Write value at address 0
-  writeEEPROM( 0, (byte*)newCounter, sizeof(uint16_t));
+  writeEEPROM( 0, (byte*)&newCounter, sizeof(uint16_t));
 }
 
 void writeMeasurementInEEPROM(struct measurement *measureDatastore) {

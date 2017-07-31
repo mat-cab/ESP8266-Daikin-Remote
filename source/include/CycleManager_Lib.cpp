@@ -22,6 +22,9 @@ void initializeCycleManager() {
 
   // initialize with no reset
   reset = false;
+
+  // Read cycleFactor pointer from RTC memory
+  cycleFactor = getRTCPointer_cycleFactor();
 }
 
 void resetCycleManager() {
@@ -38,7 +41,7 @@ void resetCycleManager() {
 
 void updateCycleManager() {
   // Compute the next iterations (in case of cycle overflow)
-  *iteration = *iteration + (1 + millis() / CYCLE_TIME) % CYCLE_ITERATIONS;
+  *iteration = (*iteration + (1 + millis() / CYCLE_TIME)) % CYCLE_ITERATIONS;
 }
 
 uint32_t getNextCycle() {
