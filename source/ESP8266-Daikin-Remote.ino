@@ -16,6 +16,7 @@
 #include "include/CycleManager/CycleManager.h"
 #include "include/Debug_Lib.h"
 #include "include/Scheduler/Scheduler.h"
+#include "include/IR_Lib.h"
 
 void setup() {
   // Save the power
@@ -46,6 +47,9 @@ void setup() {
 
   // Init the Scheduler
   initializeScheduler();
+
+  // Init the IR 
+  initializeIR();
 
   // Now that time is set, update other less usefull values
   measurement measure;  
