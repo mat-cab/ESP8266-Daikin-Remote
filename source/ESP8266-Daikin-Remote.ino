@@ -15,6 +15,7 @@
 #include "include/Wifi_Lib.h"
 #include "include/CycleManager_Lib.h"
 #include "include/Debug_Lib.h"
+#include "include/Scheduler_Lib.h"
 
 void setup() {
   // Save the power
@@ -43,6 +44,12 @@ void setup() {
 
   // Init the I2C protocol
   initializeI2C();
+
+  // Init the Scheduler
+  initializeScheduler();
+
+  // send the schedule to the debug
+  printSchedule();  
 
   // Now that time is set, update other less usefull values
   measurement measure;  
