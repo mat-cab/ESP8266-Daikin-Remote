@@ -8,23 +8,7 @@
 
 #include "Arduino.h"
 
-// Enum for the action types
-enum ActionType : byte {
-  Start,
-  Stop
-};
-
-// Type of the DateMask
-typedef uint8_t DaysMask;
-
-// Structure for the actions
-typedef struct Action {
-  ActionType aType;
-  DaysMask dMask;
-  byte hour;
-  byte minute;
-  byte second;
-};
+#include "Scheduler/Action.h"
 
 void initializeScheduler();
 

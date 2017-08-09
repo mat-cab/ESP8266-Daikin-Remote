@@ -1,49 +1,47 @@
-#include "Arduino.h"
-
 #include "Time.h"
+
 #include "Debug_Lib.h"
 
 #include "Scheduler_Lib.h"
 
-Action schedule[15];
-byte lastAction;
+Action * schedule;
 
 void initializeScheduler() {
-  lastAction = 0;
-
   // Fill with stuff initially
-  addAction(Stop, 0x01, 17, 30, 0);
-  addAction(Start, 0x7F, 15, 30, 0);
-}
+  Action * newAction = new Action(AC_START, 0x01, 17, 30, 0);
+  schedule = newAction;
 
-void addAction(ActionType actionType, DaysMask dMask, byte hour, byte minute, byte second) {
-  schedule[lastAction++] = Action { actionType, dMask, hour, minute, second };
+  newAction = new Action(Action(AC_STOP, 0x7F, 15, 30, 0));
+  schedule->addAction(newAction);
 }
 
 void clearScheduler() {
-  lastAction = 0;
+  schedule = NULL;
 }
 
 bool isSchedulerActive() {
-  return (lastAction > 0);  
+  return (schedule != NULL);
 }
 
 Action *getNextAction() {
-  // If the schedule is empty, return 0
-  if (lastAction == 0) {
+  // If the schedule is empty, return NULL
+  if (schedule == NULL) {
     return NULL;
   }
 
   // initialize the next action to the first one
-  Action *nextAction = &(schedule[0]);
+  Action *currentAction = schedule;
+  Action *nextAction = currentAction;
   time_t minTime = getSecondsUntil(nextAction), nextTime;
 
-  for (int i = 1; i < lastAction; i++) {
-    nextTime = getSecondsUntil(&(schedule[lastAction]));
+  while ( currentAction->getNextAction() != NULL ) {
+    currentAction = nextAction->getNextAction();
+
+    nextTime = getSecondsUntil(nextAction);
 
     if (nextTime < minTime) {
       minTime = nextTime;
-      nextAction = &(schedule[lastAction]);
+      nextAction = currentAction;
     }
   }
 
@@ -52,12 +50,13 @@ Action *getNextAction() {
 
 time_t getSecondsUntil(Action *action) {
   uint8_t today = weekday(), nextday;
-  time_t timeLeft = (action-> hour * 60 + action->minute) * 60 + action->second, timeNow = (hour() * 60 + minute()) * 60 + second();
+  time_t timeLeft = (action->getHour() * 60 + action->getMinute()) * 60 + action->getSecond(), timeNow = (hour() * 60 + minute()) * 60 + second();
+  DaysMask dMask = action->getDaysMask();
   
   // Loop through 8 days (for actions scheduled today)
   for ( int i = today; i <= today + 7; i++ ) {
     // check if operation is scheduled for day i
-    if ( action->dMask & (2 << (i % 7)) ) {
+    if ( dMask & (2 << (i % 7)) ) {
       // This is the first next day it will occur
       
       // If it is today, and that the time is before now, then it is not for today
@@ -77,32 +76,19 @@ time_t getSecondsUntil(Action *action) {
 } 
 
 void printSchedule() {
-  for (int i = 0; i < lastAction; i++) {
-    debug("Schedule place "+String(i)+":");
-    printAction(&(schedule[i]));
-  }
+  uint8_t i = 1;
+  Action *nextAction = schedule;
+
+  do {
+    debug("Schedule place "+String(i++)+":");
+    printAction(nextAction);
+    
+    nextAction = nextAction->getNextAction();
+  } while (nextAction != NULL);
 }
 
 void printAction(Action *action) {
-  String aTypeString = getActionTypeString(action->aType);
+  String aTypeString = action->getActionType();
 
-  debug(aTypeString+" - happens on "+String(action->dMask)+" at "+String(action->hour)+":"+String(action->minute)+":"+String(action->second));
-}
-
-String getActionTypeString(ActionType aType) {
-  String result;
-
-  switch (aType) {
-    case Start:
-      result = "START";
-      break;
-    case Stop:
-      result = "STOP";
-      break;
-    default:
-      debug("Unknown ActionType :"+aType);
-      break;
-  }
-
-  return result;
+  debug(aTypeString+" - happens on "+String(action->getDaysMask())+" at "+String(action->getHour())+":"+String(action->getMinute())+":"+String(action->getSecond()));
 }
