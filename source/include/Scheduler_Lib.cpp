@@ -13,6 +13,12 @@ void initializeScheduler() {
 
   newAction = new Action(Action(AC_STOP, 0x7F, 15, 30, 0));
   schedule->addAction(newAction);
+
+  newAction = new Action(Action(AC_STOP, 0x7F, 23, 59, 59));
+  schedule->addAction(newAction);
+
+  newAction = new Action(Action(AC_STOP, 0x08, 20, 0, 0));
+  schedule->addAction(newAction);
 }
 
 void clearScheduler() {
@@ -56,11 +62,11 @@ time_t getSecondsUntil(Action *action) {
   // Loop through 8 days (for actions scheduled today)
   for ( int i = today; i <= today + 7; i++ ) {
     // check if operation is scheduled for day i
-    if ( dMask & (2 << (i % 7)) ) {
+    if ( dMask & (1 << (i % 7)) ) {
       // This is the first next day it will occur
       
       // If it is today, and that the time is before now, then it is not for today
-      if (i == today && timeNow < timeLeft) {
+      if (i == today && timeNow > timeLeft) {
         continue;
       }
 
