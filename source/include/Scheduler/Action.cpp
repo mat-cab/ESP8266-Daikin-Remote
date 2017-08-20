@@ -2,6 +2,7 @@
 
 #include "Time.h"
 
+#include "../RTCMem_Lib.h"
 #include "../Debug_Lib.h"
 
 #include "Action.h"
@@ -24,6 +25,10 @@ Action::Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minu
   tMask->setHour(hour);
   tMask->setMinute(minute);
   tMask->setSecond(second);
+}
+
+Action::Action(TimeMask * timeMask) : Action() {
+  tMask = timeMask;
 }
 
 DaysMask Action::getDaysMask() const {
@@ -106,4 +111,16 @@ void Action::run() {
   
   // mark as executed
   this->executed = true;
+}
+
+void Action::saveInRTCMem() const {
+  TimeMask * RTCTM = getRTCPointer_nextActionTimeMask();
+
+  *RTCTM = *tMask;
+}
+
+Action * Action::readFromRTCMem() {
+  TimeMask * RTCTM = getRTCPointer_nextActionTimeMask();
+
+  return new Action( RTCTM );
 }

@@ -59,3 +59,7 @@ uint16_t * getRTCPointer_iteration() {
 float * getRTCPointer_cycleFactor() {
   return &(RTCdata->cycle_factor);
 }
+
+TimeMask * getRTCPointer_nextActionTimeMask() {
+  return (&RTCdata->nextActionTimeMask);
+}

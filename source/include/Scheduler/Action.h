@@ -15,11 +15,14 @@ class Action {
   Action *nextAction;
   bool executed;
 
+  // private constructor (for the timemask)
+  Action(TimeMask * timeMask);
+
   // Public methods
   public:
   // Constructors
   Action();
-  Action( ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second);
+  Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second);
 
   DaysMask getDaysMask() const;
 
@@ -43,6 +46,11 @@ class Action {
   void makeLastAction();
 
   void run();
+
+  // Methods for the RTC memory
+  void saveInRTCMem() const;
+
+  static Action * readFromRTCMem();
 };
 
 #endif

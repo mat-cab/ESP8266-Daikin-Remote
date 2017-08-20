@@ -3,6 +3,8 @@
 
 #include "Arduino.h"
 
+#include "Scheduler/TimeMask.h"
+
 // structures for the RTC memory
 struct {
   uint32_t crc32; 
@@ -15,6 +17,7 @@ struct rtcData {
   time_t timestamp;
   uint16_t iteration;
   float cycle_factor;
+  TimeMask nextActionTimeMask;
 };
 
 bool readRTCmemory();
@@ -29,4 +32,5 @@ void writeRTCmem();
 time_t * getRTCPointer_timestamp();
 uint16_t * getRTCPointer_iteration();
 float * getRTCPointer_cycleFactor();
+TimeMask * getRTCPointer_nextActionTimeMask();
 #endif

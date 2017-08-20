@@ -10,6 +10,9 @@ Action * nextActionOnSchedule;
 void initializeScheduler() {
   debug("Starting initialization of scheduler..."); 
 
+  // read the action from RTC Memory (should be an empty action)
+  schedule = Action::readFromRTCMem();
+
   debug("Scheduler initialization finished");
 }
 
@@ -112,6 +115,10 @@ void runScheduler() {
   updateScheduler(newerNextAction);
 }
 
+void saveSchedulerInRTCMem() {
+
+}
+
 void updateScheduler() {
   Action *nextAction = getNextAction();
   
@@ -154,10 +161,12 @@ void updateScheduler(Action *firstAction) {
 
   // set the schedule to the new first action
   schedule = firstAction;
+
+  // save in RTC memory
+  schedule->saveInRTCMem();
+
   debug("Scheduler updated");
 }
-
-
 
 bool isSchedulerActive() {
   return (schedule != NULL);
