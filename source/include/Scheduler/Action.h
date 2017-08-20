@@ -13,6 +13,7 @@ class Action {
   ActionType aType;
   TimeMask *tMask;
   Action *nextAction;
+  bool executed;
 
   // Public methods
   public:
@@ -28,12 +29,20 @@ class Action {
 
   uint8_t getSecond() const;
 
+  bool isExecuted() const;
+
   String getActionType() const;
+
+  void print() const;
 
   Action * getNextAction() const;
 
   Action * addAction(Action * newAction);
   Action * addAction(Action newAction);
+
+  void makeLastAction();
+
+  void run();
 };
 
 #endif

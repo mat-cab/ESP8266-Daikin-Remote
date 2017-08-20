@@ -1,5 +1,7 @@
 #include "Arduino.h"
 
+#include "Time.h"
+
 #include "../Debug_Lib.h"
 
 #include "Action.h"
@@ -11,6 +13,8 @@ Action::Action() {
   tMask = timeMask;
 
   nextAction = NULL;
+
+  executed = false;
 }
 
 Action::Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second) : Action() {
@@ -36,6 +40,10 @@ uint8_t Action::getMinute() const {
 
 uint8_t Action::getSecond() const {
   return tMask->getSecond();
+}
+
+bool Action::isExecuted() const {
+  return executed;
 }
 
 String Action::getActionType() const {
@@ -65,6 +73,10 @@ String Action::getActionType() const {
   return result;
 }
 
+void Action::print() const {
+  debug(this->getActionType()+" - happens on "+String(this->getDaysMask())+" at "+String(this->getHour())+":"+String(this->getMinute())+":"+String(this->getSecond()));
+}
+
 Action * Action::getNextAction() const {
   return nextAction;
 }
@@ -79,4 +91,19 @@ Action * Action::addAction( Action * newAction ) {
 
 Action * Action::addAction(Action newAction) {
   return addAction(&newAction);
+}
+
+void Action::makeLastAction() {
+  nextAction = NULL;
+}
+
+void Action::run() {
+  //TODO: Complete the run function for each case
+
+  // for debug purposes
+  debug("Running following action:");
+  this->print();
+  
+  // mark as executed
+  this->executed = true;
 }

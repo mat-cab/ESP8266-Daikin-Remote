@@ -27,17 +27,16 @@ void setup() {
   // Read the RTC memory
   bool corruptedRTCmem = readRTCmemory();
 
+  /* -----------------------------------------------
+      INITIALIZATION OF ALL MODULES
+      Must start by the cycleManager
+  -------------------------------------------------- */
+  
   // initialize the cycleManager
   initializeCycleManager();
 
   // Init the debug
   initializeDebug();
-
-  // If memory is corrupted
-  if (corruptedRTCmem) {
-    // reset the cycle manager (force an autoupdate)
-    resetCycleManager();
-  }
 
   // Init the pins for the battery measurement
   initializeBatteryMeasurement();
@@ -48,24 +47,42 @@ void setup() {
   // Init the Scheduler
   initializeScheduler();
 
-  // send the schedule to the debug
-  printSchedule();  
-
   // Now that time is set, update other less usefull values
   measurement measure;  
   iteration = getRTCPointer_iteration();
 
-  // In case of reset, fix the initial values
-  if (corruptedRTCmem) {  
-    // Also send to debug
+  /* -----------------------------------------------
+      RESET OF THE MODULES
+      In case of corrupted RTC memory
+  -------------------------------------------------- */
+
+  // If memory is corrupted
+  if (corruptedRTCmem) {
+     // Also send to debug
     debug("RTC memory is corrupted");
+
+    // reset the cycle manager (force an autoupdate)
+    resetCycleManager();
 
     // reset the EEPROM
     resetEEPROM();
-  }  
-    
+
+    // reset the scheduler
+    resetScheduler();
+  }
+
+  // send the schedule to the debug
+  printSchedule();  
+
   // Pause before looping
   delay(100);
+
+  
+  /* -----------------------------------------------
+      CYCLE EXECUTION
+      Measurement is performed and saved to EEPROM
+      Scheduler is run
+  -------------------------------------------------- */
 
   // Send debug message
   debug("Performing measurements ...");
@@ -80,6 +97,9 @@ void setup() {
   // Save the measurement in EEPROM
   writeMeasurementInEEPROM(&measure);
 
+  // Run the scheduler and all scheduled action
+  runScheduler();
+
   // If at end of cycle
   if ( *iteration == CYCLE_ITERATIONS - 1 ) {
     // Send the data with Wifi
@@ -88,6 +108,13 @@ void setup() {
     // reset the EEPROM
     resetEEPROM(); 
   }
+
+  /* -----------------------------------------------
+      CYCLE END
+      Close the debug
+      Save all necessary info
+      Go to deepSleep
+  -------------------------------------------------- */
 
   // Send message to debug
   debug("*** End of iteration "+ String(*iteration) +" - Time is "+String(weekday())+" "+String(day())+"/"+String(month())+"/"+String(year())+" "+String(hour())+":"+String(minute())+":"+String(second())+" ***");
