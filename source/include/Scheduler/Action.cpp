@@ -127,6 +127,9 @@ Action * Action::addAction( Action * newAction ) {
     this->nextAction = newAction;
     // Also say newAction is the last one
     newAction->nextAction = NULL;
+
+    // do not do anything else
+    return NULL;
   }
 
   // If there is a next action, verify if the new action is before or after this next one

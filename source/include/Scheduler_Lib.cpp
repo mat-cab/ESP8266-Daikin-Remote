@@ -44,6 +44,9 @@ void resetScheduler() {
   // sort the schedule
   sortSchedule();
 
+  // save in RTC Memory
+  saveSchedulerInRTCMem();
+
   debug("Scheduler reset finished");
 }
 
@@ -72,19 +75,19 @@ void runScheduler() {
   if ( !(schedule->getSecondsFromNow() <= 0) ) {
     // Do nothing for this cycle
     debug("First action is not to be executed");
-    return;
+  } else {
+
+    //TODO: Read the full schedule from the EEPROM Mem
+
+    // Loop for all actions to be executed
+    do {
+      // Execute the action
+      schedule->run();
+  
+      // sort the actions in the schedule
+      sortSchedule();
+    } while (schedule->getSecondsFromNow() <= 0);
   }
-
-  //TODO: Read the full schedule from the EEPROM Mem
-
-  // Loop for all actions to be executed
-  do {
-    // Execute the action
-    schedule->run();
-
-    // sort the actions in the schedule
-    sortSchedule();
-  } while (schedule->getSecondsFromNow() <= 0);
 
   // Save the scheduler information in the RTC and in the EEPROM
   saveSchedulerInRTCMem();
