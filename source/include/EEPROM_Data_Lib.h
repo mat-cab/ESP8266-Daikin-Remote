@@ -1,5 +1,5 @@
-#ifndef EEPROM_MEASUREMENT_Lib_H
-#define EEPROM_MEASUREMENT_Lib_H
+#ifndef EEPROM_DATA_LIB_H
+#define EEPROM_DATA_LIB_H
 
 #include "Arduino.h"
 #include "Measurement.h"

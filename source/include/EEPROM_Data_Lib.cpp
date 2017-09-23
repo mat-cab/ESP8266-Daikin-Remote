@@ -2,7 +2,7 @@
 
 #include "EEPROM_Lib.h"
 #include "Measurement.h"
-#include "EEPROM_Measurement_Lib.h"
+#include "EEPROM_Data_Lib.h"
 
 void resetEEPROM() {
   // Reset the EEPROM counter to 0
