@@ -20,6 +20,8 @@ void clearScheduler();
 
 void runScheduler();
 
+void saveSchedulerInRTCMem();
+
 void sortSchedule();
 
 bool isSchedulerActive();

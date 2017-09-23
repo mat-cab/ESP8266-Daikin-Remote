@@ -7,16 +7,18 @@
 
 Action * schedule;
 Action * nextActionOnSchedule;
-uint8_t * lastDaySchedulerExecuted;
+Scheduler_RTCData * schedulerRTCData;
+uint8_t lastDayOfExecution;
 
 void initializeScheduler() {
   debug("Starting initialization of scheduler..."); 
 
-  // read the action from RTC Memory (should be an empty action)
-  schedule = Action::readFromRTCMem();
+  // read the data from RTC Memory
+  schedulerRTCData = getRTCPointer_schedulerRTCData();
 
-  // read the last day the scheduler was executed from the RTC memory
-  lastDaySchedulerExecuted = getRTCPointer_lastSchedulerDay();
+  // Cast it to appropriate data
+  schedule = schedulerRTCData->getAction();
+  lastDayOfExecution = schedulerRTCData->getLastDayOfExecution();
 
   debug("Scheduler initialization finished");
 }
@@ -58,12 +60,12 @@ void runScheduler() {
   }
 
   // Verify if the day has changed since the last execution
-  if (*lastDaySchedulerExecuted != weekday()) {
+  if (lastDayOfExecution != weekday()) {
     // if so, reset all actions executed
     schedule->resetAllExecuted();  
 
     // and save the day
-    *lastDaySchedulerExecuted = weekday();
+    lastDayOfExecution = weekday();
   }
  
   // Verify if the first action is to be executed
@@ -84,7 +86,17 @@ void runScheduler() {
     sortSchedule();
   } while (schedule->getSecondsFromNow() <= 0);
 
+  // Save the scheduler information in the RTC and in the EEPROM
+  saveSchedulerInRTCMem();
+  //TODO: Save the updated schedule in the EEPROM Mem
+
+  // Send debug message
   debug("Schedule was run succesfully");
+}
+
+void saveSchedulerInRTCMem() {
+  schedulerRTCData->updateLastDayOfExecution(lastDayOfExecution);
+  schedulerRTCData->updateActionData(schedule);
 }
 
 void sortSchedule() {

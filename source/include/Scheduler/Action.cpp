@@ -28,8 +28,9 @@ Action::Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minu
   setExecutionFlag();
 }
 
-Action::Action(TimeMask * timeMask) : Action() {
+Action::Action(TimeMask * timeMask, bool executionFlag) : Action() {
   this->tMask = timeMask;
+  this->executed = executionFlag;
 }
 
 bool Action::setExecutionFlag() {
@@ -115,6 +116,10 @@ Action * Action::getNextAction() const {
   return (this->nextAction);
 }
 
+TimeMask * Action::getTimeMask() const {
+  return (this->tMask);
+}
+
 Action * Action::addAction( Action * newAction ) {
   // First of all, check if there is an action after
   if (this->nextAction == NULL) {
@@ -148,16 +153,4 @@ void Action::run() {
   
   // mark as executed for today
   this->executed = true;
-}
-
-void Action::saveInRTCMem() const {
-  TimeMask * RTCTM = getRTCPointer_nextActionTimeMask();
-
-  *RTCTM = *tMask;
-}
-
-Action * Action::readFromRTCMem() {
-  TimeMask * RTCTM = getRTCPointer_nextActionTimeMask();
-
-  return new Action( RTCTM );
 }

@@ -4,6 +4,7 @@
 #include "Arduino.h"
 
 // Enum for the action types
+// Limited to 16 action types!
 enum ActionType : uint8_t {
   EMPTY_ACTION,
   AC_START,

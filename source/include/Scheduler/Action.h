@@ -9,7 +9,7 @@
 class Action {
   // Attributes
   private:
-  
+  // Internal variable
   ActionType aType;
   TimeMask *tMask;
   Action *nextAction;
@@ -18,6 +18,7 @@ class Action {
   // private constructor (for the timemask)
   Action(TimeMask * timeMask);
 
+  // Elaborate setters
   bool setExecutionFlag();
 
   // Public methods
@@ -25,30 +26,30 @@ class Action {
   // Constructors
   Action();
   Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second);
+  Action(TimeMask *tMask, bool executionFlag);
 
-  DaysMask getDaysMask() const;
+  // Getters
+  Action * getNextAction() const;
+  TimeMask * getTimeMask() const;
 
+  // Elaborate getters
+  bool isLastAction() const;
   int32_t getSecondsFromNow() const;
-
   String getActionType() const;
 
-  void print() const;
-
+  // Elaborate setters
   void resetExecuted();
-  void resetAllExecuted();
 
-  bool isLastAction() const;
-  Action * getNextAction() const;
-  
+  // Group setters
+  void resetAllExecuted();
   Action * addAction(Action * newAction);
   Action * addAction(Action newAction);
 
+  // Actions
   void run();
 
-  // Methods for the RTC memory
-  void saveInRTCMem() const;
-
-  static Action * readFromRTCMem();
+  // Debug actions
+  void print() const;
 };
 
 #endif

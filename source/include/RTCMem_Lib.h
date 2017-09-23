@@ -3,7 +3,7 @@
 
 #include "Arduino.h"
 
-#include "Scheduler/TimeMask.h"
+#include "Scheduler/Scheduler_RTCData.h"
 
 // structures for the RTC memory
 struct {
@@ -14,11 +14,14 @@ struct {
 // Usefull data in the RTC memory
 // Note: this should be less than the 508 available bytes!
 struct rtcData {
+  // size of time_t: 
   time_t timestamp;
+  // size of uint16_t: 2 bytes
   uint16_t iteration;
+  // size of float: 
   float cycle_factor;
-  TimeMask nextActionTimeMask;
-  uint8_t lastSchedulerDay;
+  // size of Scheduler_RTCData: 5 bytes
+  Scheduler_RTCData schedulerRTCData;
 };
 
 bool readRTCmemory();
@@ -33,6 +36,5 @@ void writeRTCmem();
 time_t * getRTCPointer_timestamp();
 uint16_t * getRTCPointer_iteration();
 float * getRTCPointer_cycleFactor();
-TimeMask * getRTCPointer_nextActionTimeMask();
-uint8_t * getRTCPointer_lastSchedulerDay();
+Scheduler_RTCData * getRTCPointer_schedulerRTCData();
 #endif
