@@ -4,22 +4,28 @@
 
 Scheduler_RTCData::Scheduler_RTCData() {
   this->tMask = *(new TimeMask());
-  this->aMask = 0;
+  this->aMask = *(new ActionMask());
 }
 
 uint8_t Scheduler_RTCData::getLastDayOfExecution() const {
-  return (this->aMask & 0x70 >> 3);
+  return (this->aMask.getSecondaryData());
 }
 
 Action * Scheduler_RTCData::getAction() {
-  return new Action(&(this->tMask),(bool)((this->aMask & 0x80) >> 7), (ActionTypeEnum)(this->aMask & 0x0F));
+  return new Action(&(this->tMask),&(this->aMask));
 }
 
 void Scheduler_RTCData::updateLastDayOfExecution(uint8_t day) {
-  this->aMask = ((this->aMask & 0x8F) | ((day & 0x7) << 4));
+  this->aMask.setSecondaryData(day);
 }
 
 void Scheduler_RTCData::updateActionData(Action * action) {
+  // Save the secondary data first
+  uint8_t secondaryData = this->aMask.getSecondaryData();
+
   this->tMask = *action->getTimeMask();
-  this->aMask = ((this->aMask & 0xF0) | (action->getActionType()->getRawValue() & 0x0F));
+  this->aMask = *action->getActionMask();
+
+  // Save again the secondary data
+  this->aMask.setSecondaryData( secondaryData);
 }

@@ -5,30 +5,33 @@
 
 #include "TimeMask.h"
 #include "ActionType.h"
+#include "ActionMask.h"
 
 class Action {
   // Attributes
   private:
   // Internal variable
-  ActionType *aType;
+  // For data storage
   TimeMask *tMask;
+  ActionMask *aMask;
+
   Action *nextAction;
-  bool executed;
 
   // Elaborate setters
-  bool setExecutionFlag();
+  void setExecutionFlag();
 
   // Public methods
   public:
   // Constructors
   Action();
-  Action(ActionTypeEnum actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second);
-  Action(TimeMask *tMask, bool executionFlag, ActionTypeEnum actionType);
+  Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second);
+  Action(TimeMask *tMask, ActionMask *aMask);
 
   // Getters
   Action * getNextAction() const;
   TimeMask * getTimeMask() const;
-  ActionType * getActionType() const;
+  ActionMask * getActionMask() const;
+  ActionType getActionType() const;
 
   // Elaborate getters
   bool isLastAction() const;

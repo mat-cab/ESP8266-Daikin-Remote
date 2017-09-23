@@ -8,17 +8,14 @@
 #include "Action.h"
 
 Action::Action() {
-  this->aType = new ActionType(EMPTY_ACTION);
-
   this->tMask = new TimeMask();
+  this->aMask = new ActionMask();
 
   this->nextAction = NULL;
-
-  this->executed = false;
 }
 
-Action::Action(ActionTypeEnum actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second) : Action() {
-  this->aType->setActionType(actionType);
+Action::Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second) : Action() {
+  this->aMask->setActionType(actionType);
 
   this->tMask->setDaysMask(&dMask);
   this->tMask->setHour(hour);
@@ -28,17 +25,14 @@ Action::Action(ActionTypeEnum actionType, DaysMask dMask, uint8_t hour, uint8_t 
   setExecutionFlag();
 }
 
-Action::Action(TimeMask * timeMask, bool executionFlag, ActionTypeEnum actionType) : Action() {
+Action::Action(TimeMask * timeMask, ActionMask * aMask) : Action() {
   this->tMask = timeMask;
-  this->executed = executionFlag;
-  this->aType->setActionType(actionType);
+  this->aMask = aMask;
 }
 
-bool Action::setExecutionFlag() {
+void Action::setExecutionFlag() {
   // Set the execution mask wrt seconds until next execution
-  this->executed = (getSecondsFromNow() < 0);
-
-  return this->executed;
+  this->aMask->setExecuted((getSecondsFromNow() < 0));
 }
 
 Action * Action::getNextAction() const {
@@ -49,8 +43,12 @@ TimeMask * Action::getTimeMask() const {
   return (this->tMask);
 }
 
-ActionType * Action::getActionType() const {
-  return (this->aType);
+ActionMask * Action::getActionMask() const {
+  return (this->aMask);
+}
+
+ActionType Action::getActionType() const {
+  return (this->aMask->getActionType());
 }
 
 bool Action::isLastAction() const {
@@ -71,7 +69,7 @@ int32_t Action::getSecondsFromNow() const {
       
       // If it is not today, then this is the next day
       // If it is today, check if it was already executed (otherwise it is for next week)
-      if (i != today || !this->executed) {
+      if (i != today || !this->aMask->isExecuted()) {
         nextday = i;
         break;
       }
@@ -83,7 +81,7 @@ int32_t Action::getSecondsFromNow() const {
 }
 
 void Action::resetExecuted() {
-  this->executed = false;
+  this->aMask->setExecuted(false);
 }
 
 void Action::resetAllExecuted() {
@@ -129,10 +127,10 @@ void Action::run() {
   this->print();
   
   // mark as executed for today
-  this->executed = true;
+  this->aMask->setExecuted(true);
 }
 
 void Action::print() const {
-  debug(this->aType->print()+" - happens on "+String(this->tMask->getDaysMask())+" at "+String(this->tMask->getHour())+":"+String(this->tMask->getMinute())+":"+String(this->tMask->getSecond()));
+  debug(printActionType(getActionType())+" - happens on "+String(this->tMask->getDaysMask())+" at "+String(this->tMask->getHour())+":"+String(this->tMask->getMinute())+":"+String(this->tMask->getSecond()));
 }
 

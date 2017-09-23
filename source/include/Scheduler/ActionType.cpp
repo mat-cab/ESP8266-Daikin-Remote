@@ -1,17 +1,9 @@
 #include "ActionType.h"
 
-ActionType::ActionType(ActionTypeEnum actionType) {
-  this->aType = actionType;
-}
-
-uint8_t ActionType::getRawValue() const {
-  return (this->aType);
-}
-
-String ActionType::print() const {
+String printActionType( ActionType aType) {
   String result;
 
-  switch (this->aType) {
+  switch (aType) {
     case EMPTY_ACTION:
       result = "EMPTY_ACTION";
       break;
@@ -34,8 +26,3 @@ String ActionType::print() const {
 
   return result;
 }
-
-void ActionType::setActionType(ActionTypeEnum actionType) {
-  this->aType = actionType;
-}
-
