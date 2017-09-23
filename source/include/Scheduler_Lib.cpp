@@ -2,6 +2,7 @@
 
 #include "Debug_Lib.h"
 #include "RTCMem_Lib.h"
+#include "EEPROM_Data_Lib.h"
 
 #include "Scheduler_Lib.h"
 
@@ -30,7 +31,7 @@ void resetScheduler() {
   Action * newAction = new Action(AC_START, 0x01, 17, 30, 0);
   schedule = newAction;
 
-  newAction = new Action(Action(AC_STOP, 0x7F, 15, 30, 0));
+  newAction = new Action(Action(AC_STOP, 0x7F, 17, 40, 0));
   schedule->addAction(newAction);
 
   newAction = new Action(Action(AC_STOP, 0x7F, 23, 59, 59));
@@ -43,6 +44,9 @@ void resetScheduler() {
 
   // sort the schedule
   sortSchedule();
+
+  // write in EEPROM
+  writeScheduleInEEPROM(schedule); 
 
   // save in RTC Memory
   saveSchedulerInRTCMem();
@@ -76,8 +80,12 @@ void runScheduler() {
     // Do nothing for this cycle
     debug("First action is not to be executed");
   } else {
+    debug("Reading schedule from EEPROM..."); 
+    // read the whole schedule
+    readScheduleFromEEPROM(&schedule);
 
-    //TODO: Read the full schedule from the EEPROM Mem
+    // print it
+    printSchedule();
 
     // Loop for all actions to be executed
     do {
@@ -87,11 +95,13 @@ void runScheduler() {
       // sort the actions in the schedule
       sortSchedule();
     } while (schedule->getSecondsFromNow() <= 0);
+
+    // Write in EEPROM once all actions are exectued
+    writeScheduleInEEPROM(schedule); 
   }
 
   // Save the scheduler information in the RTC and in the EEPROM
   saveSchedulerInRTCMem();
-  //TODO: Save the updated schedule in the EEPROM Mem
 
   // Send debug message
   debug("Schedule was run succesfully");

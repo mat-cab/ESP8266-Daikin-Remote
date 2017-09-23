@@ -9,8 +9,12 @@ ActionMask::ActionMask(bool executed, ActionType actionType) {
   setExecuted(executed);
 }
 
-uint8_t ActionMask::getRawData() const {
-  return (this->rawData);
+ActionMask::ActionMask(uint8_t *dataPointer) {
+  this->rawData = *dataPointer;
+}
+
+uint8_t * ActionMask::getRawData() {
+  return &(this->rawData);
 }
 
 bool ActionMask::isExecuted() const {

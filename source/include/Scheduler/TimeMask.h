@@ -25,23 +25,22 @@ class TimeMask {
   public:
   // Constructors
   TimeMask();
-//  TimeMask(DaysMask *dMask, uint8_t hour, uint8_t minute, uint8_t second);
+  TimeMask(uint8_t * dataPointer);
+
+  // Getters
+  uint8_t * getRawData() const;
+
+  // Elaborate getters
+  DaysMask getDaysMask() const;
+  uint8_t getHour() const;
+  uint8_t getMinute() const;
+  uint8_t getSecond() const;
   
+  // Elaborate setters
   void setDaysMask(DaysMask *dMask);
-
   void setHour(uint8_t hour);
-
   void setMinute(uint8_t minute);
-
   void setSecond(uint8_t second);
-
-  DaysMask getDaysMask();
-
-  uint8_t getHour();
-
-  uint8_t getMinute();
-
-  uint8_t getSecond();
 };
 
 TimeMask * getTimeMask( DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second);

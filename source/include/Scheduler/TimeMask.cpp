@@ -3,44 +3,55 @@
 #include "TimeMask.h"
 
 TimeMask::TimeMask() {
-  tMask[0] = 0;
-  tMask[1] = 0;
-  tMask[2] = 0;
-  tMask[3] = 0;
+  this->tMask[0] = 0;
+  this->tMask[1] = 0;
+  this->tMask[2] = 0;
+  this->tMask[3] = 0;
+}
+
+TimeMask::TimeMask(uint8_t * dataPointer) {
+  this->tMask[0] = *dataPointer;
+  this->tMask[1] = *(dataPointer + 1);
+  this->tMask[2] = *(dataPointer + 2);
+  this->tMask[3] = *(dataPointer + 3);
+}
+
+uint8_t * TimeMask::getRawData() const {
+  return ((uint8_t*)(this->tMask));
+}
+
+DaysMask TimeMask::getDaysMask() const {
+  return (this->tMask[0] >> 1);
+}
+
+uint8_t TimeMask::getHour()  const {
+  return (((this->tMask[0] & 0x01) << 4) | ((this->tMask[1] & 0xF0) >> 4));
+}
+
+uint8_t TimeMask::getMinute() const {
+  return (((this->tMask[1] & 0x0F) << 2) | ((this->tMask[2] & 0xC0) >> 6));
+}
+
+uint8_t TimeMask::getSecond() const {
+  return (this->tMask[2] & 0x3F);
 }
 
 void TimeMask::setDaysMask(DaysMask *dMask) {
-  tMask[0] = ((tMask[0] & 0x01) | (*dMask << 1));
+  this->tMask[0] = ((this->tMask[0] & 0x01) | (*dMask << 1));
 }
 
 void TimeMask::setHour(uint8_t hour) {
-  tMask[0] = ((tMask[0] & 0xFE) | ((hour >> 4) & 0x01));
-  tMask[1] = ((tMask[1] & 0x0F) | (hour << 4));
+  this->tMask[0] = ((this->tMask[0] & 0xFE) | ((hour >> 4) & 0x01));
+  this->tMask[1] = ((this->tMask[1] & 0x0F) | (hour << 4));
 }
 
 void TimeMask::setMinute(uint8_t minute) {
-  tMask[1] = ((tMask[1] & 0xF0) | ((minute >> 2) & 0x0F));
-  tMask[2] = ((tMask[2] & 0x3F) | (minute << 6));
+  this->tMask[1] = ((this->tMask[1] & 0xF0) | ((minute >> 2) & 0x0F));
+  this->tMask[2] = ((this->tMask[2] & 0x3F) | (minute << 6));
 }
 
 void TimeMask::setSecond(uint8_t second) {
-  tMask[2] = ((tMask[2] & 0xC0) | (second & 0x3F));
-}
-
-DaysMask TimeMask::getDaysMask() {
-  return (tMask[0] >> 1);
-}
-
-uint8_t TimeMask::getHour() {
-  return (((tMask[0] & 0x01) << 4) | ((tMask[1] & 0xF0) >> 4));
-}
-
-uint8_t TimeMask::getMinute() {
-  return (((tMask[1] & 0x0F) << 2) | ((tMask[2] & 0xC0) >> 6));
-}
-
-uint8_t TimeMask::getSecond() {
-  return (tMask[2] & 0x3F);
+  this->tMask[2] = ((this->tMask[2] & 0xC0) | (second & 0x3F));
 }
 
 TimeMask * getTimeMask( DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second) {

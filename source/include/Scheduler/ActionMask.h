@@ -19,9 +19,10 @@ class ActionMask {
   // Constructors
   ActionMask();
   ActionMask(bool executed, ActionType actionType);
+  ActionMask(uint8_t * dataPointer);
 
   // Getters
-  uint8_t getRawData() const;
+  uint8_t * getRawData();
 
   // Elaborate getters
   bool isExecuted() const;

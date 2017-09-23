@@ -105,8 +105,8 @@ void setup() {
     // Send the data with Wifi
     sendWifi();
 
-    // reset the EEPROM
-    resetEEPROM(); 
+    // reset the EEPROM for the measurement only
+    resetMeasurementEEPROM(); 
   }
 
   /* -----------------------------------------------
