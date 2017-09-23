@@ -18,6 +18,7 @@ struct rtcData {
   uint16_t iteration;
   float cycle_factor;
   TimeMask nextActionTimeMask;
+  uint8_t lastSchedulerDay;
 };
 
 bool readRTCmemory();
@@ -33,4 +34,5 @@ time_t * getRTCPointer_timestamp();
 uint16_t * getRTCPointer_iteration();
 float * getRTCPointer_cycleFactor();
 TimeMask * getRTCPointer_nextActionTimeMask();
+uint8_t * getRTCPointer_lastSchedulerDay();
 #endif

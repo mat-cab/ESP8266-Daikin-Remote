@@ -8,53 +8,66 @@
 #include "Action.h"
 
 Action::Action() {
-  aType = EMPTY_ACTION;
+  this->aType = EMPTY_ACTION;
 
-  TimeMask * timeMask = new TimeMask();
-  tMask = timeMask;
+  this->tMask = new TimeMask();
 
-  nextAction = NULL;
+  this->nextAction = NULL;
 
-  executed = false;
+  this->executed = false;
 }
 
 Action::Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second) : Action() {
-  aType = actionType;
+  this->aType = actionType;
 
-  tMask->setDaysMask(&dMask);
-  tMask->setHour(hour);
-  tMask->setMinute(minute);
-  tMask->setSecond(second);
+  this->tMask->setDaysMask(&dMask);
+  this->tMask->setHour(hour);
+  this->tMask->setMinute(minute);
+  this->tMask->setSecond(second);
+
+  setExecutionFlag();
 }
 
 Action::Action(TimeMask * timeMask) : Action() {
-  tMask = timeMask;
+  this->tMask = timeMask;
 }
 
-DaysMask Action::getDaysMask() const {
-  return tMask->getDaysMask();
+bool Action::setExecutionFlag() {
+  // Set the execution mask wrt seconds until next execution
+  this->executed = (getSecondsFromNow() < 0);
+
+  return this->executed;
 }
 
-uint8_t Action::getHour() const {
-  return tMask->getHour();
-}
+int32_t Action::getSecondsFromNow() const {
+  uint8_t today = weekday(), nextday;
+  int32_t timeLeft = (this->tMask->getHour() * 60 + this->tMask->getMinute()) * 60 + this->tMask->getSecond(), timeNow = (hour() * 60 + minute()) * 60 + second();
+ 
+  DaysMask dMask = this->tMask->getDaysMask();
+  
+  // Loop through 8 days (for actions scheduled today)
+  for ( uint8_t i = today; i <= today + 7; i++ ) {
+    // check if operation is scheduled for day i
+    if ( dMask & (1 << (i % 7)) ) {
+      // This is the first next day it will occur
+      
+      // If it is not today, then this is the next day
+      // If it is today, check if it was already executed (otherwise it is for next week)
+      if (i != today || !this->executed) {
+        nextday = i;
+        break;
+      }
+    }
+  }
 
-uint8_t Action::getMinute() const {
-  return tMask->getMinute();
-}
-
-uint8_t Action::getSecond() const {
-  return tMask->getSecond();
-}
-
-bool Action::isExecuted() const {
-  return executed;
+  // return the number of seconds left
+  return ((timeLeft - timeNow) + (nextday - today) * 24 * 60 * 60);
 }
 
 String Action::getActionType() const {
   String result;
 
-  switch (aType) {
+  switch (this->aType) {
     case EMPTY_ACTION:
       result = "EMPTY_ACTION";
       break;
@@ -79,27 +92,51 @@ String Action::getActionType() const {
 }
 
 void Action::print() const {
-  debug(this->getActionType()+" - happens on "+String(this->getDaysMask())+" at "+String(this->getHour())+":"+String(this->getMinute())+":"+String(this->getSecond()));
+  debug(this->getActionType()+" - happens on "+String(this->tMask->getDaysMask())+" at "+String(this->tMask->getHour())+":"+String(this->tMask->getMinute())+":"+String(this->tMask->getSecond()));
+}
+
+void Action::resetExecuted() {
+  this->executed = false;
+}
+
+void Action::resetAllExecuted() {
+  resetExecuted();
+
+  if (this->nextAction != NULL) {
+    return this->nextAction->resetAllExecuted();
+  }
+}
+
+bool Action::isLastAction() const {
+  return (this->nextAction == NULL);
 }
 
 Action * Action::getNextAction() const {
-  return nextAction;
+  return (this->nextAction);
 }
 
 Action * Action::addAction( Action * newAction ) {
-  if (nextAction != NULL) {
-    return nextAction->addAction(newAction);
+  // First of all, check if there is an action after
+  if (this->nextAction == NULL) {
+    // If not, then put it at the end
+    this->nextAction = newAction;
+    // Also say newAction is the last one
+    newAction->nextAction = NULL;
   }
 
-  nextAction = newAction;
+  // If there is a next action, verify if the new action is before or after this next one
+  if (newAction->getSecondsFromNow() > this->nextAction->getSecondsFromNow()) {
+    // newAction is after the next one
+    this->nextAction->addAction( newAction );
+  } else {
+    // newAction is after the current one
+    newAction->nextAction = this->nextAction;
+    this->nextAction = newAction;
+  }
 }
 
 Action * Action::addAction(Action newAction) {
   return addAction(&newAction);
-}
-
-void Action::makeLastAction() {
-  nextAction = NULL;
 }
 
 void Action::run() {
@@ -109,7 +146,7 @@ void Action::run() {
   debug("Running following action:");
   this->print();
   
-  // mark as executed
+  // mark as executed for today
   this->executed = true;
 }
 

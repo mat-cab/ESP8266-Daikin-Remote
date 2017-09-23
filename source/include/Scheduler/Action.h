@@ -18,6 +18,8 @@ class Action {
   // private constructor (for the timemask)
   Action(TimeMask * timeMask);
 
+  bool setExecutionFlag();
+
   // Public methods
   public:
   // Constructors
@@ -26,24 +28,20 @@ class Action {
 
   DaysMask getDaysMask() const;
 
-  uint8_t getHour() const;
-
-  uint8_t getMinute() const;
-
-  uint8_t getSecond() const;
-
-  bool isExecuted() const;
+  int32_t getSecondsFromNow() const;
 
   String getActionType() const;
 
   void print() const;
 
-  Action * getNextAction() const;
+  void resetExecuted();
+  void resetAllExecuted();
 
+  bool isLastAction() const;
+  Action * getNextAction() const;
+  
   Action * addAction(Action * newAction);
   Action * addAction(Action newAction);
-
-  void makeLastAction();
 
   void run();
 

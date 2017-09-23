@@ -20,21 +20,9 @@ void clearScheduler();
 
 void runScheduler();
 
-void updateScheduler();
-
-void updateScheduler(Action *firstAction);
+void sortSchedule();
 
 bool isSchedulerActive();
-
-Action *getNextAction();
-
-Action *getNextActionAfter(Action *actionStart);
-
-time_t getSecondsFrom(Action *action, uint8_t weekday, uint8_t hour, uint8_t minute, uint8_t second);
-
-time_t getSecondsUntil(Action *action);
-
-time_t getSecondsBetween(Action *actionStart, Action *action);
 
 void printSchedule();
 

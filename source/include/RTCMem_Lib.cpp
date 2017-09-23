@@ -63,3 +63,7 @@ float * getRTCPointer_cycleFactor() {
 TimeMask * getRTCPointer_nextActionTimeMask() {
   return (&RTCdata->nextActionTimeMask);
 }
+
+uint8_t * getRTCPointer_lastSchedulerDay() {
+  return (&RTCdata->lastSchedulerDay);
+}
