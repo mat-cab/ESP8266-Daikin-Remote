@@ -20,7 +20,6 @@ class Scheduler_RTCData {
   public:
   // Constructors
   Scheduler_RTCData();
-//  Scheduler_RTCData(Action * action);
 
   // Getters
   uint8_t getLastDayOfExecution() const;

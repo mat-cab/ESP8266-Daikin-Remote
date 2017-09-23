@@ -10,13 +10,10 @@ class Action {
   // Attributes
   private:
   // Internal variable
-  ActionType aType;
+  ActionType *aType;
   TimeMask *tMask;
   Action *nextAction;
   bool executed;
-
-  // private constructor (for the timemask)
-  Action(TimeMask * timeMask);
 
   // Elaborate setters
   bool setExecutionFlag();
@@ -25,17 +22,17 @@ class Action {
   public:
   // Constructors
   Action();
-  Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second);
-  Action(TimeMask *tMask, bool executionFlag);
+  Action(ActionTypeEnum actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second);
+  Action(TimeMask *tMask, bool executionFlag, ActionTypeEnum actionType);
 
   // Getters
   Action * getNextAction() const;
   TimeMask * getTimeMask() const;
+  ActionType * getActionType() const;
 
   // Elaborate getters
   bool isLastAction() const;
   int32_t getSecondsFromNow() const;
-  String getActionType() const;
 
   // Elaborate setters
   void resetExecuted();

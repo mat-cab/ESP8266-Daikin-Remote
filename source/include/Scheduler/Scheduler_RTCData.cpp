@@ -1,6 +1,6 @@
-#include "Scheduler_RTCData.h"
-
 #include "Action.h"
+
+#include "Scheduler_RTCData.h"
 
 Scheduler_RTCData::Scheduler_RTCData() {
   this->tMask = *(new TimeMask());
@@ -12,7 +12,7 @@ uint8_t Scheduler_RTCData::getLastDayOfExecution() const {
 }
 
 Action * Scheduler_RTCData::getAction() {
-  return new Action(&(this->tMask),(bool)((this->aMask & 0x80) >> 7));
+  return new Action(&(this->tMask),(bool)((this->aMask & 0x80) >> 7), (ActionTypeEnum)(this->aMask & 0x0F));
 }
 
 void Scheduler_RTCData::updateLastDayOfExecution(uint8_t day) {
@@ -21,4 +21,5 @@ void Scheduler_RTCData::updateLastDayOfExecution(uint8_t day) {
 
 void Scheduler_RTCData::updateActionData(Action * action) {
   this->tMask = *action->getTimeMask();
+  this->aMask = ((this->aMask & 0xF0) | (action->getActionType()->getRawValue() & 0x0F));
 }

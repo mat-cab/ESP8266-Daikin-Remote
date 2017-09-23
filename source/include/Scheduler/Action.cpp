@@ -8,7 +8,7 @@
 #include "Action.h"
 
 Action::Action() {
-  this->aType = EMPTY_ACTION;
+  this->aType = new ActionType(EMPTY_ACTION);
 
   this->tMask = new TimeMask();
 
@@ -17,8 +17,8 @@ Action::Action() {
   this->executed = false;
 }
 
-Action::Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second) : Action() {
-  this->aType = actionType;
+Action::Action(ActionTypeEnum actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second) : Action() {
+  this->aType->setActionType(actionType);
 
   this->tMask->setDaysMask(&dMask);
   this->tMask->setHour(hour);
@@ -28,9 +28,10 @@ Action::Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minu
   setExecutionFlag();
 }
 
-Action::Action(TimeMask * timeMask, bool executionFlag) : Action() {
+Action::Action(TimeMask * timeMask, bool executionFlag, ActionTypeEnum actionType) : Action() {
   this->tMask = timeMask;
   this->executed = executionFlag;
+  this->aType->setActionType(actionType);
 }
 
 bool Action::setExecutionFlag() {
@@ -38,6 +39,22 @@ bool Action::setExecutionFlag() {
   this->executed = (getSecondsFromNow() < 0);
 
   return this->executed;
+}
+
+Action * Action::getNextAction() const {
+  return (this->nextAction);
+}
+
+TimeMask * Action::getTimeMask() const {
+  return (this->tMask);
+}
+
+ActionType * Action::getActionType() const {
+  return (this->aType);
+}
+
+bool Action::isLastAction() const {
+  return (this->nextAction == NULL);
 }
 
 int32_t Action::getSecondsFromNow() const {
@@ -65,37 +82,6 @@ int32_t Action::getSecondsFromNow() const {
   return ((timeLeft - timeNow) + (nextday - today) * 24 * 60 * 60);
 }
 
-String Action::getActionType() const {
-  String result;
-
-  switch (this->aType) {
-    case EMPTY_ACTION:
-      result = "EMPTY_ACTION";
-      break;
-    case AC_START:
-      result = "AC_START";
-      break;
-    case AC_STOP:
-      result = "AC_STOP";
-      break;
-    case UPDATE_CYCLE:
-      result = "UPDATE_CYCLE";
-      break;
-    case UPDATE_SCHEDULE:
-      result = "UPDATE_SCHEDULE";
-      break;
-    default:
-      debug("Unknown ActionType :"+aType);
-      break;
-  }
-
-  return result;
-}
-
-void Action::print() const {
-  debug(this->getActionType()+" - happens on "+String(this->tMask->getDaysMask())+" at "+String(this->tMask->getHour())+":"+String(this->tMask->getMinute())+":"+String(this->tMask->getSecond()));
-}
-
 void Action::resetExecuted() {
   this->executed = false;
 }
@@ -106,18 +92,6 @@ void Action::resetAllExecuted() {
   if (this->nextAction != NULL) {
     return this->nextAction->resetAllExecuted();
   }
-}
-
-bool Action::isLastAction() const {
-  return (this->nextAction == NULL);
-}
-
-Action * Action::getNextAction() const {
-  return (this->nextAction);
-}
-
-TimeMask * Action::getTimeMask() const {
-  return (this->tMask);
 }
 
 Action * Action::addAction( Action * newAction ) {
@@ -157,3 +131,8 @@ void Action::run() {
   // mark as executed for today
   this->executed = true;
 }
+
+void Action::print() const {
+  debug(this->aType->print()+" - happens on "+String(this->tMask->getDaysMask())+" at "+String(this->tMask->getHour())+":"+String(this->tMask->getMinute())+":"+String(this->tMask->getSecond()));
+}
+
