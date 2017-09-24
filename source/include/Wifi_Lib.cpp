@@ -20,8 +20,8 @@ void initializeWifi() {
 }
 
 void connectToWifi() {
-  // Verofy if already connected
-  if (!WiFi.status() != WL_CONNECTED) {
+  // Verify if already connected
+  if (WiFi.status() != WL_CONNECTED) {
     // Activate Wifi
     WiFi.mode(WIFI_STA);
 
