@@ -28,6 +28,9 @@ void initializeScheduler() {
 void resetScheduler() {
   debug("Resetting the scheduler");
 
+  // set the scheduler to empty
+  schedule = NULL;
+
   // Connect to the wifi
   connectToWifi();
 
@@ -100,16 +103,16 @@ void runScheduler() {
 }
 
 void saveSchedulerInRTCMem() {
-  // Don t do anything if the scheduler is not active
-  if (!isSchedulerActive()) {
-    return;
-  }
-
   schedulerRTCData->updateLastDayOfExecution(lastDayOfExecution);
   schedulerRTCData->updateActionData(schedule);
 }
 
 void sortSchedule() {
+  // if schedule is empty, do nothing
+  if (!isSchedulerActive()) {
+    return;
+  }
+
   // If there is only one action, then the schedule is sorted
   if (schedule->isLastAction()) {
     return;

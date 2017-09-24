@@ -30,7 +30,7 @@ ActionType ActionMask::getActionType() const {
 }
 
 bool ActionMask::isEmpty() const {
-  return (this->rawData==0);
+  return (getActionType() == EMPTY_ACTION);
 }
 
 void ActionMask::setActionType(ActionType actionType) {

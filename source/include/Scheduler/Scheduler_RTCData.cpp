@@ -12,7 +12,7 @@ uint8_t Scheduler_RTCData::getLastDayOfExecution() const {
 }
 
 Action * Scheduler_RTCData::getAction() {
-  // If the aMask is empty, return null
+  // If the timemask is empty (should not be)
   if (this->aMask.isEmpty()) {
     return NULL;
   } else {
@@ -28,8 +28,15 @@ void Scheduler_RTCData::updateActionData(Action * action) {
   // Save the secondary data first
   uint8_t secondaryData = this->aMask.getSecondaryData();
 
-  this->tMask = *action->getTimeMask();
-  this->aMask = *action->getActionMask();
+  // Verify if the action is NULL
+  if (action == NULL) {
+    // if so, save as empty ActionMask
+    *(this->aMask.getRawData()) = 0;
+  } else {
+    // else save the timemask and actionmask
+    this->tMask = *action->getTimeMask();
+    this->aMask = *action->getActionMask();
+  }
 
   // Save again the secondary data
   this->aMask.setSecondaryData( secondaryData);
