@@ -23,4 +23,8 @@
 #define IOT_CHANNEL_ID "00000"
 // Key of the stream
 #define IOT_STREAM_KEY String("0000000000000000")
+
+// Private constants for the Schedule on GIST
+// URL of the schedule
+#define SCHEDULE_URL "/<github-user>/<gist-id>/raw/<gist-file>"
 #endif
