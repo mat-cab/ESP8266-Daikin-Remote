@@ -19,7 +19,7 @@ class TimeMask {
   // Bits 7 to 11: execute at hour h
   // Bits 12 to 17 : execute at minute m
   // Bits 18 to 23 : execute at second s
-  uint8_t tMask[4];
+  uint8_t tMask[3];
 
   // Public methods
   public:

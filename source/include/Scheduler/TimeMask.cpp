@@ -6,14 +6,12 @@ TimeMask::TimeMask() {
   this->tMask[0] = 0;
   this->tMask[1] = 0;
   this->tMask[2] = 0;
-  this->tMask[3] = 0;
 }
 
 TimeMask::TimeMask(uint8_t * dataPointer) {
   this->tMask[0] = *dataPointer;
   this->tMask[1] = *(dataPointer + 1);
   this->tMask[2] = *(dataPointer + 2);
-  this->tMask[3] = *(dataPointer + 3);
 }
 
 uint8_t * TimeMask::getRawData() const {
