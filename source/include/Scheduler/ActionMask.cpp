@@ -29,6 +29,10 @@ ActionType ActionMask::getActionType() const {
   return ((ActionType)(this->rawData & 0x0F));
 }
 
+bool ActionMask::isEmpty() const {
+  return (this->rawData==0);
+}
+
 void ActionMask::setActionType(ActionType actionType) {
   this->rawData = ((this->rawData & 0xF0) | (actionType & 0x0F));
 }

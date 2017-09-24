@@ -3,6 +3,7 @@
 #include "Debug_Lib.h"
 #include "RTCMem_Lib.h"
 #include "EEPROM_Data_Lib.h"
+#include "Wifi_Lib.h"
 
 #include "Scheduler_Lib.h"
 
@@ -27,20 +28,11 @@ void initializeScheduler() {
 void resetScheduler() {
   debug("Resetting the scheduler");
 
-  // Fill with stuff initially
-  Action * newAction = new Action(AC_START, 0x01, 17, 30, 0);
-  schedule = newAction;
+  // Connect to the wifi
+  connectToWifi();
 
-  newAction = new Action(Action(AC_STOP, 0x7F, 17, 40, 0));
-  schedule->addAction(newAction);
-
-  newAction = new Action(Action(AC_STOP, 0x7F, 23, 59, 59));
-  schedule->addAction(newAction);
-
-  newAction = new Action(Action(AC_STOP, 0x08, 20, 0, 0));
-  schedule->addAction(newAction);
-
-  debug("All actions added!");
+  // Receive the schedule
+  receiveWifi();
 
   // sort the schedule
   sortSchedule();
@@ -108,6 +100,11 @@ void runScheduler() {
 }
 
 void saveSchedulerInRTCMem() {
+  // Don t do anything if the scheduler is not active
+  if (!isSchedulerActive()) {
+    return;
+  }
+
   schedulerRTCData->updateLastDayOfExecution(lastDayOfExecution);
   schedulerRTCData->updateActionData(schedule);
 }

@@ -102,12 +102,18 @@ void setup() {
 
   // If at end of cycle
   if ( *iteration == CYCLE_ITERATIONS - 1 ) {
+    // connect to the wifi
+    connectToWifi();
+
     // Send the data with Wifi
     sendWifi();
 
     // reset the EEPROM for the measurement only
     resetMeasurementEEPROM(); 
   }
+
+  // Disconnect from the Wifi
+  disconnectWifi();
 
   /* -----------------------------------------------
       CYCLE END

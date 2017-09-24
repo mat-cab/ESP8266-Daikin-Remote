@@ -2,6 +2,7 @@
 
 #include "ESP8266WiFi.h"
 #include "WiFiClient.h"
+#include "WiFiClientSecure.h"
 
 #include "Time.h"
 #include "CustomConstants.h"
@@ -11,38 +12,57 @@
 #include "RTCMem_Lib.h"
 #include "Wifi_Lib.h"
 
-WiFiClient client;
+WiFiClient * client;
 
 void initializeWifi() {
   // Power off Wifi
   WiFi.mode(WIFI_OFF);
 }
 
+void connectToWifi() {
+  // Verofy if already connected
+  if (!WiFi.status() != WL_CONNECTED) {
+    // Activate Wifi
+    WiFi.mode(WIFI_STA);
+
+    // Connect to Wifi
+    WiFi.begin(WIFI_SSID, WIFI_PASSWD);
+
+    // Output message
+    debug("Trying to connect to Wifi...");
+
+    // Wait until connected
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(WIFI_WAIT);
+      debug("Waiting for connection...");
+    }
+
+    // Output message
+    debug("Connected to Wifi!");
+  } else {
+    // Say we are already connected
+    debug("Wifi is already connected");
+  }
+}
+
+void disconnectWifi() {
+  // Switch the WIFI off
+  WiFi.mode(WIFI_OFF);
+}
+
+/***************************
+ * Measurement send part
+ ***************************/
+
 void sendWifi() {
   char header[100];
   String jsonBuffer;
   bool retry = true;
+
+  client = new WiFiClient();
  
-  // Activate Wifi
-  WiFi.mode(WIFI_STA);
-
-  // Connect to Wifi
-  WiFi.begin(WIFI_SSID, WIFI_PASSWD);
-
-  // Output message
-  debug("Trying to connect to Wifi...");
-
-  // Wait until connected
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(WIFI_WAIT);
-    debug("Waiting for connection...");
-  }
-
-  // Output message
-  debug("Connected to Wifi!");
-
   // Connect to server
-  while (client.connect(IOT_SERVER, IOT_PORT) && retry) {
+  while (client->connect(IOT_SERVER, IOT_PORT) && retry) {
 
     // Create the JSON buffer
     jsonBuffer = "{\"write_api_key\":\""+IOT_STREAM_KEY+"\",\"updates\":[";
@@ -77,13 +97,13 @@ void sendWifi() {
 
     // Send the beginning of the request
     sprintf(header, "POST /channels/%s/bulk_update.json HTTP/1.1", IOT_CHANNEL_ID);
-    client.println(header); 
-    client.println("Host: api.thingspeak.com");
-    client.println("User-Agent: mw.doc.bulk-update (Arduino ESP8266)");
-    client.println("Connection: close");
-    client.println("Content-Type: application/json");
-    client.println("Content-Length: "+String(dataLength));
-    client.println();
+    client->println(header); 
+    client->println("Host: api.thingspeak.com");
+    client->println("User-Agent: mw.doc.bulk-update (Arduino ESP8266)");
+    client->println("Connection: close");
+    client->println("Content-Type: application/json");
+    client->println("Content-Length: "+String(dataLength));
+    client->println();
 
     // Loop through all the remaining entries
     for (uint16_t i=1; i<EEPROMcounter; i++) {
@@ -93,7 +113,7 @@ void sendWifi() {
         // Send to debug
         debug(jsonBuffer);
 
-        writtenData = client.print(jsonBuffer);
+        writtenData = client->print(jsonBuffer);
 
         if ( writtenData != jsonBuffer.length()) {
           debug("Error: sent data : "+String(jsonBuffer.length())+" - written data : "+writtenData);
@@ -115,7 +135,7 @@ void sendWifi() {
 
     debug(jsonBuffer);
 
-    writtenData = client.println(jsonBuffer);
+    writtenData = client->println(jsonBuffer);
             
     if ( writtenData != jsonBuffer.length() + 2) {
       debug("Error in last write: sent data : "+String(jsonBuffer.length()+2)+" - written data : "+writtenData);
@@ -128,7 +148,7 @@ void sendWifi() {
     debug("Request sent!");
 
     // Wait for the client response
-    while( !client.available() ) {
+    while( !client->available() ) {
       debug("Waiting for response...");
       
       delay(WIFI_WAIT);
@@ -137,10 +157,10 @@ void sendWifi() {
     debug("Response received!");
 
     // Output its response
-    while (client.connected()) {
-      if ( client.available() )
+    while (client->connected()) {
+      if ( client->available() )
       {
-        String str = client.readStringUntil('\n');
+        String str = client->readStringUntil('\n');
         
         if (str.startsWith("HTTP/1.1")) {
           // Do retry if return code is different from 202, which means OK
@@ -162,9 +182,6 @@ void sendWifi() {
       debug("Request sucessfully sent!");
     }
   }
-
-  // Switch the WIFI off
-  WiFi.mode(WIFI_OFF);
 }
 
 void jsonUpdate(String *jsonBuf) {
@@ -199,4 +216,62 @@ void jsonAddEntry(String* buf, struct measurement *measureDatastore) {
   dtostrf(getVoltage(measureDatastore), 5, 3, sVoltage);
   
   *buf += "{\"created_at\":\""+String(measurementTime)+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
+}
+
+/***************************
+ * scheduler receive part
+ ***************************/
+void receiveWifi() {
+  char header[100];
+  bool retry = true;
+  bool endOfHeader;
+
+  client = new WiFiClientSecure();
+
+  while( client->connect(GIST_SERVER, GIST_PORT) && retry ) {
+    endOfHeader = false;
+
+    debug("Connected to schedule server");
+
+    sprintf(header, "GET %s HTTP/1.1", SCHEDULE_URL);
+    client->println(header); 
+    client->println("Host: "+String(GIST_SERVER));
+    client->println("Connection: close");
+    client->println();
+
+    // Here is the response
+    while (client->connected()) {
+      if ( client->available() ) {
+        String str = client->readStringUntil('\n');
+        
+        if (endOfHeader == false) {
+          if (str.startsWith("HTTP/1.1")) {
+            // Do retry if return code is different from 200, which means OK
+            retry = (str.substring(9,12) != "200");
+
+            if (retry) {
+              debug("Error reply was: "+str);
+            }
+          } else if (str.startsWith("Date: ")) {
+              updateTime( str.substring(6) );
+          } else if (str.length() == 1) {
+              endOfHeader = true;
+              debug("Here comes the schedule:");
+          }
+        } else {
+          // We are in the schedule part!
+          debug(str);
+        }
+      }     
+    }
+    
+    if ( retry ) {
+      // There was an error
+      debug("Error while receiving the schedule");
+    } else {
+      debug("Schedule sucessfully received!");
+    }
+  }
+
+  debug("Schedule updated !");
 }

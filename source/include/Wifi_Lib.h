@@ -14,13 +14,23 @@
 // Port of the IOT Server
 #define IOT_PORT 80
 
-void initializeWifi();
- 
-void passWifiVariables(float *cFactor, time_t *timestamp);
+// Constants for the schedule server
+// Data server of the schedule (use HTTPS)
+#define GIST_SERVER "gist.githubusercontent.com"
+// Port for HTTPS
+#define GIST_PORT 443
 
+void initializeWifi();
+
+void connectToWifi();
+
+void disconnectWifi();
+ 
 void sendWifi();
 
 void jsonUpdate(String *jsonBuf);
 
 void jsonAddEntry(String* buf, struct measurement *measureDatastore);
+
+void receiveWifi();
 #endif

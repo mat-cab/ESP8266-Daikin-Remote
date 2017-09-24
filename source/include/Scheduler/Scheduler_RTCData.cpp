@@ -12,7 +12,12 @@ uint8_t Scheduler_RTCData::getLastDayOfExecution() const {
 }
 
 Action * Scheduler_RTCData::getAction() {
-  return new Action(&(this->tMask),&(this->aMask));
+  // If the aMask is empty, return null
+  if (this->aMask.isEmpty()) {
+    return NULL;
+  } else {
+    return new Action(&(this->tMask),&(this->aMask));
+  }
 }
 
 void Scheduler_RTCData::updateLastDayOfExecution(uint8_t day) {

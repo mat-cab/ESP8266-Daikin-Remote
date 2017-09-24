@@ -28,6 +28,7 @@ class ActionMask {
   bool isExecuted() const;
   uint8_t getSecondaryData() const;
   ActionType getActionType() const;
+  bool isEmpty() const;
 
   // Setters
   void setActionType(ActionType actionType);
