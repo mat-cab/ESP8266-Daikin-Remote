@@ -91,7 +91,7 @@ void runScheduler() {
       sortSchedule();
     } while (schedule->getSecondsFromNow() <= 0);
 
-    // Write in EEPROM once all actions are exectued
+    // Write in EEPROM once all actions are executed
     writeScheduleInEEPROM(schedule); 
   }
 

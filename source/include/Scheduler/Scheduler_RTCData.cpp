@@ -16,7 +16,7 @@ Action * Scheduler_RTCData::getAction() {
   if (this->aMask.isEmpty()) {
     return NULL;
   } else {
-    return new Action(&(this->tMask),&(this->aMask));
+    return new Action(&(this->tMask),&(this->aMask), NULL);
   }
 }
 

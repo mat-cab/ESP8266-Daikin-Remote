@@ -71,7 +71,7 @@ void writeEEPROMEndOfScheduleCounter(uint16_t newCounter) {
 void writeScheduleInEEPROM(Action * schedule) {
   Action * currentAction = schedule;
   uint16_t counter = 0;
-  // Max size for an action : 64 bytes
+  // Max size for an action : 32 bytes
   uint8_t dataBuffer[32];
   uint8_t actionSize = 0;
 
@@ -80,8 +80,11 @@ void writeScheduleInEEPROM(Action * schedule) {
 
     memcpy(dataBuffer, currentAction->getActionMask()->getRawData(), sizeof(ActionMask));
     memcpy(dataBuffer + sizeof(ActionMask), currentAction->getTimeMask()->getRawData(), sizeof(TimeMask));
-    //TODO: Fill for the action arguments
-//    memcpy(dataBuffer + sizeof(ActionMask) + sizeof(TimeMask), #######, currentAction->getActionMask()->getSecondaryData());
+
+    // If there are somme additional data, save it too
+    if (currentAction->getActionMask()->getSecondaryData() > 0 ) {
+      memcpy(dataBuffer + sizeof(ActionMask) + sizeof(TimeMask), currentAction->getAdditionalData()->getRawData(), currentAction->getActionMask()->getSecondaryData());
+    }
 
     writeEEPROM( EEPROM_HEADER_SIZE + counter, (byte*)dataBuffer, actionSize);
 
@@ -107,7 +110,7 @@ void readScheduleFromEEPROM(Action **schedule) {
     readEEPROM( EEPROM_HEADER_SIZE + counter, (byte*) dataBuffer, sizeof(dataBuffer));
 
     // Create a new action with the appropriate TimeMask and ActionMask
-    newAction = new Action(new TimeMask(dataBuffer+sizeof(ActionMask)),new ActionMask(dataBuffer));
+    newAction = new Action(new TimeMask(dataBuffer+sizeof(ActionMask)),new ActionMask(dataBuffer), dataBuffer+sizeof(ActionMask)+sizeof(TimeMask));
 
     // If it is the first time we read (counter is empty), then update the schedule variable
     if (counter == 0) {

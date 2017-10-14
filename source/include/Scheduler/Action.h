@@ -8,6 +8,7 @@
 #include "TimeMask.h"
 #include "ActionType.h"
 #include "ActionMask.h"
+#include "AbstractAdditionalData.h"
 
 class Action {
   // Attributes
@@ -16,6 +17,7 @@ class Action {
   // For data storage
   TimeMask *tMask;
   ActionMask *aMask;
+  AbstractAdditionalData *aData;
 
   Action *nextAction;
 
@@ -27,13 +29,14 @@ class Action {
   // Constructors
   Action();
   Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second);
-  Action(TimeMask *tMask, ActionMask *aMask);
+  Action(TimeMask *tMask, ActionMask *aMask, uint8_t *aDataPointer);
 
   // Getters
   Action * getNextAction() const;
   TimeMask * getTimeMask() const;
   ActionMask * getActionMask() const;
   ActionType getActionType() const;
+  AbstractAdditionalData * getAdditionalData() const;
 
   // Elaborate getters
   bool isLastAction() const;

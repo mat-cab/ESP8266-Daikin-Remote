@@ -5,11 +5,15 @@
 #include "../RTCMem_Lib.h"
 #include "../Debug_Lib.h"
 
+#include "AdditionalData_AC_START.h"
+#include "AdditionalData_UPDATE_CYCLE.h"
+
 #include "Action.h"
 
 Action::Action() {
   this->tMask = new TimeMask();
   this->aMask = new ActionMask();
+  this->aData = NULL;
 
   this->nextAction = NULL;
 }
@@ -23,11 +27,27 @@ Action::Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minu
   this->tMask->setSecond(second);
 
   setExecutionFlag();
+
+  // For special actions, add the additional data
+  if ( actionType == AC_START ) {
+    this->aData = new AdditionalData_AC_START();
+  } else if ( actionType == UPDATE_CYCLE ) {
+    this->aData = new AdditionalData_UPDATE_CYCLE();
+  }
 }
 
-Action::Action(TimeMask * timeMask, ActionMask * aMask) : Action() {
+Action::Action(TimeMask * timeMask, ActionMask * aMask, uint8_t * aDataPointer) : Action() {
   this->tMask = timeMask;
   this->aMask = aMask;
+
+  // For actions with additional data, also record the data
+  if (aDataPointer != NULL) {
+    if (this->aMask->getActionType() == AC_START) {
+      this->aData = new AdditionalData_AC_START(aDataPointer);
+    } else if (this->aMask->getActionType() == UPDATE_CYCLE) {
+      this->aData = new AdditionalData_UPDATE_CYCLE(aDataPointer);
+    }
+  }
 }
 
 void Action::setExecutionFlag() {
@@ -45,6 +65,10 @@ TimeMask * Action::getTimeMask() const {
 
 ActionMask * Action::getActionMask() const {
   return (this->aMask);
+}
+
+AbstractAdditionalData * Action::getAdditionalData() const {
+  return (this->aData);
 }
 
 ActionType Action::getActionType() const {
@@ -120,28 +144,37 @@ Action * Action::addAction(Action newAction) {
 }
 
 void Action::run() {
-  //TODO: Complete the run function for each case
-
   // for debug purposes
   debug("Running following action:");
   this->print();
   
+  //TODO: Complete the run function for each case
+  switch (getActionType()) {
+    case UPDATE_CYCLE:
+      debug("Updating the cycle time to "+String(((AdditionalData_UPDATE_CYCLE*)this->aData)->getCycleTime())+" ms");
+      break;
+  } 
+
   // mark as executed for today
   this->aMask->setExecuted(true);
 }
 
 void Action::print() const {
-  debug(printActionType(getActionType())+" - happens on "+String(this->tMask->getDaysMask())+" at "+String(this->tMask->getHour())+":"+String(this->tMask->getMinute())+":"+String(this->tMask->getSecond()));
+  debug(printActionType(getActionType())+" - happens on "+String(this->tMask->getDaysMask())+" at "+String(this->tMask->getHour())+":"+String(this->tMask->getMinute())+":"+String(this->tMask->getSecond())+" - secondary data : "+String(this->aMask->getSecondaryData()));
+
+  if (this->aData != NULL && getActionType() == UPDATE_CYCLE) {
+    debug("Additional parameters: newCycle is "+String(((AdditionalData_UPDATE_CYCLE*)this->aData)->getCycleTime())+" ms");
+  }
 }
 
 Action * parseActionFromString(String actionString) {
   debug("Parsing action : "+actionString);
 
-  byte argumentNumber = 0;
   char * argument = strtok(const_cast<char*>(actionString.c_str()),SCHEDULER_ACTION_PARSER_DELIMITER);
   ActionType aType;
-  byte daysMask = 0, hours = 0, minutes = 0, seconds = 0;
+  uint8_t argumentNumber = 0, daysMask = 0, hours = 0, minutes = 0, seconds = 0;
   Action * result = NULL;
+  AbstractAdditionalData * aData = NULL;
 
   while (argument != NULL) {
     
@@ -160,16 +193,48 @@ Action * parseActionFromString(String actionString) {
         break;
       case 8:
         // This is for the hours
-        hours = (byte)atoi(argument);
+        hours = (uint8_t)atoi(argument);
         break;
       case 9:
         // This is for the minutes
-        minutes = (byte)atoi(argument);
+        minutes = (uint8_t)atoi(argument);
         break;
       case 10:
         // This is for the seconds
-        seconds = (byte)atoi(argument);
+        seconds = (uint8_t)atoi(argument);
         break;
+      // The following arguments are additional arguments necessary for a few actions
+      case 11:
+        switch (aType) {
+          case AC_START:
+            // TODO: Add the necessary info to the aData
+//            (AdditionalData_AC_START)aData
+            break;
+          case UPDATE_CYCLE:
+            ((AdditionalData_UPDATE_CYCLE*)aData)->setCycleTime(atoi(argument));
+            break;
+        }
+        break;
+      case 12:
+        switch (aType) {
+          case AC_START:
+            // TODO: Add the necessary info to the aData
+            break;
+        }
+        break;
+    }
+
+    if (argumentNumber == 10) {
+      // The first mandatory options were given, create the associated action
+      result = new Action(aType, daysMask, hours, minutes, seconds);
+
+      // Get the additional data for some actions
+      switch (aType) {
+        case AC_START:
+        case UPDATE_CYCLE:
+          aData = result->getAdditionalData();
+          break;
+        }
     }
 
     // Loop for the next argument
@@ -180,8 +245,8 @@ Action * parseActionFromString(String actionString) {
   // Say there was an error for unknown actions
   if (aType == UNKNOWN_ACTION) {
     debug("Error while parsing this action!");
-  } else {
-    result = new Action(aType, daysMask, hours, minutes, seconds);
+
+    result = NULL;
   }
 
   return result;
