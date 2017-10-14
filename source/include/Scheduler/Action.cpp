@@ -134,3 +134,55 @@ void Action::print() const {
   debug(printActionType(getActionType())+" - happens on "+String(this->tMask->getDaysMask())+" at "+String(this->tMask->getHour())+":"+String(this->tMask->getMinute())+":"+String(this->tMask->getSecond()));
 }
 
+Action * parseActionFromString(String actionString) {
+  debug("Parsing action : "+actionString);
+
+  byte argumentNumber = 0;
+  char * argument = strtok(const_cast<char*>(actionString.c_str()),SCHEDULER_ACTION_PARSER_DELIMITER);
+  ActionType aType;
+  byte daysMask = 0, hours = 0, minutes = 0, seconds = 0;
+  Action * result = NULL;
+
+  while (argument != NULL) {
+    
+    switch(argumentNumber) {
+      case 0:
+        // This is the action type
+        aType = getActionType( argument );
+        break;
+      case 1: case 2: case 3: case 4: case 5: case 6: case 7:
+        // This is the days flag
+        if ( strcmp( argument, "1" ) == 0) {
+          // Inputs are Mon;Tues;Wed;Thu;Fri;Sat;Sun
+          // Whereas daysMask is Sat;Sun;Mon;Tues;Wed;Thu;Fri;
+          daysMask += (1 << ((argumentNumber + 1) % 7));
+        }
+        break;
+      case 8:
+        // This is for the hours
+        hours = (byte)atoi(argument);
+        break;
+      case 9:
+        // This is for the minutes
+        minutes = (byte)atoi(argument);
+        break;
+      case 10:
+        // This is for the seconds
+        seconds = (byte)atoi(argument);
+        break;
+    }
+
+    // Loop for the next argument
+    argumentNumber++;
+    argument = strtok(NULL,SCHEDULER_ACTION_PARSER_DELIMITER);
+  }
+  
+  // Say there was an error for unknown actions
+  if (aType == UNKNOWN_ACTION) {
+    debug("Error while parsing this action!");
+  } else {
+    result = new Action(aType, daysMask, hours, minutes, seconds);
+  }
+
+  return result;
+}

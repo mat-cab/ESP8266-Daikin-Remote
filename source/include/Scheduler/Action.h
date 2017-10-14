@@ -1,6 +1,8 @@
 #ifndef SCHEDULER_ACTION_H_
 #define SCHEDULER_ACTION_H_
 
+#define SCHEDULER_ACTION_PARSER_DELIMITER ";"
+
 #include "Arduino.h"
 
 #include "TimeMask.h"
@@ -52,4 +54,6 @@ class Action {
   void print() const;
 };
 
+// Static methods
+Action * parseActionFromString(String actionString);
 #endif

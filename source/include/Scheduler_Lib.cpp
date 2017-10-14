@@ -154,3 +154,21 @@ void printSchedule() {
     nextAction = nextAction->getNextAction();
   } while (nextAction != NULL);
 }
+
+void parseNewAction(String actionString) {
+  Action * newAction = parseActionFromString( actionString );
+
+  if (newAction == NULL) {
+    debug("Action not added to the schedule");
+  } else {
+    // Check whether there is already at least one action
+    if (schedule == NULL) {
+      schedule = newAction;
+    } else {
+      // if so, add to the schedule
+      schedule->addAction(newAction);
+    }
+    debug("Action added to the schedule");
+  }
+}
+

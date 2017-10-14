@@ -6,6 +6,7 @@
 // Enum for the action types
 // Limited to 16 action types!
 enum ActionType : uint8_t {
+  UNKNOWN_ACTION,
   EMPTY_ACTION,
   AC_START,
   AC_STOP,
@@ -15,4 +16,6 @@ enum ActionType : uint8_t {
 };
 
 String printActionType( ActionType aType );
+
+ActionType getActionType( String aTypeString ); 
 #endif

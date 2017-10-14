@@ -16,6 +16,7 @@ class TimeMask {
   private:
   // Data storage of the time mask
   // Bits 0 to 6 : execute on day x
+  //               day 1 is Sunday, day 6 is Friday, so day 0 is saturday
   // Bits 7 to 11: execute at hour h
   // Bits 12 to 17 : execute at minute m
   // Bits 18 to 23 : execute at second s

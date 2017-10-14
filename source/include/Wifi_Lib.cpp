@@ -10,6 +10,7 @@
 #include "CycleManager_Lib.h"
 #include "Debug_Lib.h"
 #include "RTCMem_Lib.h"
+#include "Scheduler_Lib.h"
 #include "Wifi_Lib.h"
 
 WiFiClient * client;
@@ -260,7 +261,7 @@ void receiveWifi() {
           }
         } else {
           // We are in the schedule part!
-          debug(str);
+          parseNewAction(str);
         }
       }     
     }

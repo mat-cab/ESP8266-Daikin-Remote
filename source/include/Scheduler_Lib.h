@@ -30,5 +30,5 @@ void printSchedule();
 
 void printAction(Action *action);
 
-String getActionTypeString(ActionType aType);
+void parseNewAction(String actionString);
 #endif
