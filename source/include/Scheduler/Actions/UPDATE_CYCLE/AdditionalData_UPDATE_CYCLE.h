@@ -3,7 +3,7 @@
 
 #include "Arduino.h"
 
-#include "AbstractAdditionalData.h"
+#include "../../AbstractAdditionalData.h"
 
 class AdditionalData_UPDATE_CYCLE : public AbstractAdditionalData {
   private:
@@ -26,5 +26,8 @@ class AdditionalData_UPDATE_CYCLE : public AbstractAdditionalData {
 
   // Elaborate setters
   void setCycleTime(uint32_t newCycle);
+
+  // Debug functions
+  void print() const;
 };
 #endif

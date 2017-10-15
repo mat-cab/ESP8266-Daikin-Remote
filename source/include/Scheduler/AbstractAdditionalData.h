@@ -9,6 +9,9 @@ class AbstractAdditionalData {
 
   // Getters
   virtual uint8_t * getRawData();
+
+  // Debug functions
+  virtual void print() const;
 };
 
 #endif

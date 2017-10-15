@@ -5,8 +5,8 @@
 #include "../RTCMem_Lib.h"
 #include "../Debug_Lib.h"
 
-#include "AdditionalData_AC_START.h"
-#include "AdditionalData_UPDATE_CYCLE.h"
+#include "Actions/AC_START/AdditionalData_AC_START.h"
+#include "Actions/UPDATE_CYCLE/AdditionalData_UPDATE_CYCLE.h"
 
 #include "Action.h"
 
@@ -160,10 +160,10 @@ void Action::run() {
 }
 
 void Action::print() const {
-  debug(printActionType(getActionType())+" - happens on "+String(this->tMask->getDaysMask())+" at "+String(this->tMask->getHour())+":"+String(this->tMask->getMinute())+":"+String(this->tMask->getSecond())+" - secondary data : "+String(this->aMask->getSecondaryData()));
+  debug(printActionType(getActionType())+" - happens on "+String(this->tMask->getDaysMask())+" at "+String(this->tMask->getHour())+":"+String(this->tMask->getMinute())+":"+String(this->tMask->getSecond())+" - secondary data: "+String(this->aMask->getSecondaryData()));
 
-  if (this->aData != NULL && getActionType() == UPDATE_CYCLE) {
-    debug("Additional parameters: newCycle is "+String(((AdditionalData_UPDATE_CYCLE*)this->aData)->getCycleTime())+" ms");
+  if (this->aData != NULL) {
+    this->aData->print();
   }
 }
 
@@ -207,8 +207,7 @@ Action * parseActionFromString(String actionString) {
       case 11:
         switch (aType) {
           case AC_START:
-            // TODO: Add the necessary info to the aData
-//            (AdditionalData_AC_START)aData
+            ((AdditionalData_AC_START*)aData)->setACMode(argument);
             break;
           case UPDATE_CYCLE:
             ((AdditionalData_UPDATE_CYCLE*)aData)->setCycleTime(atoi(argument));
@@ -218,7 +217,49 @@ Action * parseActionFromString(String actionString) {
       case 12:
         switch (aType) {
           case AC_START:
-            // TODO: Add the necessary info to the aData
+            ((AdditionalData_AC_START*)aData)->setTemperature(atoi(argument));
+            break;
+        }
+        break;
+      case 13:
+        switch (aType) {
+          case AC_START:
+            ((AdditionalData_AC_START*)aData)->setFanSpeed(atoi(argument));
+            break;
+        }
+        break;
+      case 14:
+        switch (aType) {
+          case AC_START: 
+             ((AdditionalData_AC_START*)aData)->setSwingLR(strcmp( argument, "1") == 0);
+            break;
+        }
+        break;
+      case 15:
+        switch (aType) {
+          case AC_START: 
+             ((AdditionalData_AC_START*)aData)->setSwingUD(strcmp( argument, "1") == 0);
+            break;
+        }
+        break;
+      case 16:
+        switch (aType) {
+          case AC_START: 
+             ((AdditionalData_AC_START*)aData)->setPowerful(strcmp( argument, "1") == 0);
+            break;
+        }
+        break;
+      case 17:
+        switch (aType) {
+          case AC_START: 
+             ((AdditionalData_AC_START*)aData)->setSilent(strcmp( argument, "1") == 0);
+            break;
+        }
+        break;
+      case 18:
+        switch (aType) {
+          case AC_START: 
+             ((AdditionalData_AC_START*)aData)->setIntelligentEye(strcmp( argument, "1") == 0);
             break;
         }
         break;

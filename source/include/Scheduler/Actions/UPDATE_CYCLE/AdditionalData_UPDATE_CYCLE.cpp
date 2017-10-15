@@ -1,3 +1,5 @@
+#include "../../../Debug_Lib.h"
+
 #include "AdditionalData_UPDATE_CYCLE.h"
 
 AdditionalData_UPDATE_CYCLE::AdditionalData_UPDATE_CYCLE() {
@@ -28,4 +30,9 @@ void AdditionalData_UPDATE_CYCLE::setCycleTime(uint32_t newCycle) {
   this->rawData[0] = (newCycle & 0xFF);
   this->rawData[1] = ((newCycle & 0xFF00) >> 7);
   this->rawData[2] = ((newCycle & 0xFF0000) >> 14);
+}
+
+void AdditionalData_UPDATE_CYCLE::print() const {
+  debug("Additional data:");
+  debug("- new cycle time: "+String(this->getCycleTime())+" ms");
 }
