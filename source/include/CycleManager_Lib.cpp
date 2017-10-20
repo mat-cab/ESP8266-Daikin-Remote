@@ -18,7 +18,7 @@ void initializeCycleManager() {
   iteration = getRTCPointer_iteration();
 
   // Set the estimated local time
-  setTime( *timestamp + (time_t)(CYCLE_TIME*(*iteration + 1)/1000));  
+  setTime( *timestamp + (time_t)(CYCLE_TIME*(*iteration + 1)));  
 
   // initialize with no reset
   reset = false;
@@ -41,11 +41,11 @@ void resetCycleManager() {
 
 void updateCycleManager() {
   // Compute the next iterations (in case of cycle overflow)
-  *iteration = (*iteration + (1 + millis() / CYCLE_TIME)) % CYCLE_ITERATIONS;
+  *iteration = (*iteration + (1 + millis() / (CYCLE_TIME * 1000))) % CYCLE_ITERATIONS;
 }
 
 uint32_t getNextCycle() {
-  uint32_t waitMillis = CYCLE_TIME * (1 + millis() / CYCLE_TIME);
+  uint32_t waitMillis = CYCLE_TIME * 1000 * (1 + millis() / (CYCLE_TIME * 1000));
   uint32_t waitMicros = (waitMillis*1000-micros())*(*cycleFactor);
 
   return waitMicros;
@@ -55,7 +55,7 @@ void updateCycleFactor(uint32_t timeShift) {
   // Do not update if there was a reset of the cycleManager  
   if (!reset) {
     // Update wrt last update
-    *cycleFactor -= (float)timeShift * 1000.0 / (float)(CYCLE_TIME * CYCLE_ITERATIONS);
+    *cycleFactor -= (float)timeShift * 1000.0 / (float)(CYCLE_TIME * 1000 * CYCLE_ITERATIONS);
   }
 }
 
@@ -137,5 +137,5 @@ void updateTime(String timestampString) {
 }
 
 time_t getMeasurementTime(struct measurement * measure) {
-  return *timestamp + measure->iterationMoment * CYCLE_TIME / 1000;
+  return *timestamp + measure->iterationMoment * CYCLE_TIME;
 }
