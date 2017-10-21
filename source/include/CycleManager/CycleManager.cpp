@@ -2,38 +2,47 @@
 
 #include "Time.h"
 
-#include "RTCMem_Lib.h"
-#include "Debug_Lib.h"
-#include "CustomConstants.h"
-#include "CycleManager_Lib.h"
+#include "../Debug_Lib.h"
+#include "../CustomConstants.h"
+#include "../RTCMem_Lib.h"
+#include "CycleManager_RTCData.h"
+#include "CycleManager.h"
 
+CycleManager_RTCData * cycleManagerRTCData;
 float *cycleFactor;
 time_t *timestamp;
 uint16_t *iteration;
+uint16_t *cycleTime;
 bool reset;
 
 void initializeCycleManager() {
+  // Read the pointer from the RTC memory
+  cycleManagerRTCData = getRTCPointer_cycleManagerRTCData();
+
   // Read the pointers from the RTC memory
-  timestamp = getRTCPointer_timestamp();
-  iteration = getRTCPointer_iteration();
+  timestamp = cycleManagerRTCData->getTimestamp();
+  iteration = cycleManagerRTCData->getIteration();
+  cycleTime = cycleManagerRTCData->getCycleTime();
 
   // Set the estimated local time
-  setTime( *timestamp + (time_t)(CYCLE_TIME*(*iteration + 1)));  
+  setTime( *timestamp + (time_t)(*cycleTime*(*iteration + 1)));  
 
   // initialize with no reset
   reset = false;
 
   // Read cycleFactor pointer from RTC memory
-  cycleFactor = getRTCPointer_cycleFactor();
+  cycleFactor = cycleManagerRTCData->getCycleFactor();
 }
 
 void resetCycleManager() {
-  // reset the iteration to the last iteration
-  // This way an update will be performed
-  *iteration = CYCLE_ITERATIONS - 1;
-
   // Also reset the cycleFactor to the initial value
   *cycleFactor = CYCLE_FACTOR; 
+
+  // Reset the cycleTime to the initial value
+  *cycleTime = CYCLE_TIME;
+
+  // reset the iterations to 0
+  *iteration = 0;
 
   // set the reset flag to true
   reset = true;
@@ -41,21 +50,21 @@ void resetCycleManager() {
 
 void updateCycleManager() {
   // Compute the next iterations (in case of cycle overflow)
-  *iteration = (*iteration + (1 + millis() / (CYCLE_TIME * 1000))) % CYCLE_ITERATIONS;
+  *iteration = *iteration + (1 + millis() / (*cycleTime * 1000));
 }
 
 uint32_t getNextCycle() {
-  uint32_t waitMillis = CYCLE_TIME * 1000 * (1 + millis() / (CYCLE_TIME * 1000));
+  uint32_t waitMillis = *cycleTime * 1000 * (1 + millis() / (*cycleTime * 1000));
   uint32_t waitMicros = (waitMillis*1000-micros())*(*cycleFactor);
 
   return waitMicros;
 }
 
-void updateCycleFactor(uint32_t timeShift) {
+void updateCycleFactor(uint32_t timeShift, uint32_t timeSpan) {
   // Do not update if there was a reset of the cycleManager  
   if (!reset) {
     // Update wrt last update
-    *cycleFactor -= (float)timeShift * 1000.0 / (float)(CYCLE_TIME * 1000 * CYCLE_ITERATIONS);
+    *cycleFactor -= (float)timeShift / (float)(timeSpan);
   }
 }
 
@@ -122,7 +131,7 @@ void updateTime(String timestampString) {
   int32_t shift =  newTime - lastTimestamp;
 
   // Adjust cycle factor
-  updateCycleFactor(shift);
+  updateCycleFactor(shift, (uint32_t) (lastTimestamp - *timestamp));
 
   // Ouput the time shift  
   debug("Shift was: "+String(shift)+" seconds"); 
@@ -136,6 +145,6 @@ void updateTime(String timestampString) {
   *timestamp = newTime - ((currentMillis-1000)/1000);
 }
 
-time_t getMeasurementTime(struct measurement * measure) {
-  return *timestamp + measure->iterationMoment * CYCLE_TIME;
+uint16_t getCycleTime() {
+  return *cycleTime;
 }

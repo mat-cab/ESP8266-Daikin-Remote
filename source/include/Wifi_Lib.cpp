@@ -1,13 +1,11 @@
-#include "Arduino.h"
-
 #include "ESP8266WiFi.h"
 #include "WiFiClient.h"
 #include "WiFiClientSecure.h"
 
 #include "Time.h"
 #include "CustomConstants.h"
-#include "EEPROM_Lib.h"
-#include "CycleManager_Lib.h"
+#include "EEPROM_Data_Lib.h"
+#include "CycleManager/CycleManager.h"
 #include "Debug_Lib.h"
 #include "RTCMem_Lib.h"
 #include "Scheduler_Lib.h"
@@ -57,7 +55,7 @@ void disconnectWifi() {
 
 void sendWifi() {
   char header[100];
-  String jsonBuffer;
+  String jsonBuffer, nextEntry;
   bool retry = true;
 
   client = new WiFiClient();
@@ -67,26 +65,23 @@ void sendWifi() {
 
     // Create the JSON buffer
     jsonBuffer = "{\"write_api_key\":\""+IOT_STREAM_KEY+"\",\"updates\":[";
-    // Remember the length:
-    uint16_t jsonBufferInitialLength = jsonBuffer.length();
 
     // Read the EEPROM counter
-    uint16_t EEPROMcounter = 0;
-    readEEPROM(0, (byte*)&EEPROMcounter, sizeof(uint16_t));
+    uint16_t EEPROMcounter = readEEPROMMeasurementCounter();
+
     struct measurement recordedMeasure;
-    
-    // Add the first record to the JSON string
-    // Read the measurement from the EEPROM
-    readMeasurementFromEEPROM(0, &recordedMeasure);
-    // Add it to the buffer
-    jsonAddEntry(&jsonBuffer, &recordedMeasure);
 
-    // get the length of a single entry
-    uint16_t jsonEntryLength = jsonBuffer.length() - jsonBufferInitialLength;
 
-    // Compute the full expected JSON data length
-    // Also add the comas between the records
-    uint32_t dataLength = jsonBufferInitialLength + EEPROMcounter * jsonEntryLength + (EEPROMcounter-1) + 4;
+    // Compute the JSON string length (initial and final part of the string)
+    uint32_t dataLength = jsonBuffer.length() + 4;
+
+    // loop through all measurement
+    for (uint16_t i=0; i<EEPROMcounter; i++) {
+      // Read a measurement from the EEPROM
+      readMeasurementFromEEPROM(i, &recordedMeasure);
+      // Add the length to the total length
+      dataLength += jsonGetEntryLength(&recordedMeasure);
+    }
     
     // Output message
     debug("Sending the update request...");
@@ -108,12 +103,25 @@ void sendWifi() {
 
     // Loop through all the remaining entries
     for (uint16_t i=1; i<EEPROMcounter; i++) {
-      jsonBuffer += ",";
-      // If next entry does not fit current buffer, send actual buffer
-      if ( jsonBuffer.length() + jsonEntryLength > JSON_BUFFER_MAX_LENGTH ) {
+      // Read a measurement from the EEPROM
+      readMeasurementFromEEPROM(i, &recordedMeasure);
+      // Add the new entry to the JSON string
+      nextEntry = jsonCreateEntry(&recordedMeasure);
+
+      if ( i != EEPROMcounter - 1 ) {
+        nextEntry += ",";
+      }
+
+      // Add what is possible to the next 
+      jsonBuffer += nextEntry.substring(0, min( nextEntry.length(), JSON_BUFFER_MAX_LENGTH - jsonBuffer.length() - 1));
+
+      // If current buffer is full
+      if ( jsonBuffer.length() == JSON_BUFFER_MAX_LENGTH ) {
+
         // Send to debug
         debug(jsonBuffer);
 
+        // Send the data to the server
         writtenData = client->print(jsonBuffer);
 
         if ( writtenData != jsonBuffer.length()) {
@@ -121,14 +129,10 @@ void sendWifi() {
         }
 
         totalWrittenData += writtenData;
-        
-        jsonBuffer = "";
+
+        // reset the jsonBuffer to the rest of the next entry       
+        jsonBuffer = nextEntry.substring( JSON_BUFFER_MAX_LENGTH - jsonBuffer.length() );
       }
-      
-      // Read a measurement from the EEPROM
-      readMeasurementFromEEPROM(i, &recordedMeasure);
-      // Add the new entry to the JSON string
-      jsonAddEntry(&jsonBuffer, &recordedMeasure);
     }
 
     // Write the end of the JSON data
@@ -185,38 +189,28 @@ void sendWifi() {
   }
 }
 
-void jsonUpdate(String *jsonBuf) {
-  // First part of the JSON string
-  *jsonBuf = "{\"write_api_key\":\""+IOT_STREAM_KEY+"\", \"updates\":[";
-
-  // Loop through all available measurements in the EEPROM
-  uint16_t EEPROMcounter = 0;
-  readEEPROM(0, (byte*)&EEPROMcounter, sizeof(uint16_t));
-  struct measurement recordedMeasure;
-  for (uint16_t i=0; i<EEPROMcounter; i++) {
-    // If in between measures, add separator
-    if ( i > 0 ) {
-      *jsonBuf += ",";
-    }
-    // Read a measurement from the EEPROM
-    readMeasurementFromEEPROM(i, &recordedMeasure);
-    // Add the new entry to the JSON string
-    jsonAddEntry(jsonBuf, &recordedMeasure);
-  }
-
-  // Add the finaf part of the JSON string
-  *jsonBuf += "]}";
-}
-
-void jsonAddEntry(String* buf, struct measurement *measureDatastore) {
+String jsonCreateEntry(struct measurement *measureDatastore) {
   char sTemp[6], sHumidity[6], sVoltage[7], sFactor[8];
-  time_t measurementTime = getMeasurementTime( measureDatastore );
-  
+
+  String buf;
+
+  uint16_t deltaTime = measureDatastore->deltaWithLastMeasurement;
+ 
   dtostrf(getTemperature(measureDatastore), 5, 2, sTemp);
   dtostrf(getHumidity(measureDatastore), 5, 2, sHumidity);
-  dtostrf(getVoltage(measureDatastore), 5, 3, sVoltage);
-  
-  *buf += "{\"created_at\":\""+String(measurementTime)+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
+  dtostrf(getVoltage(measureDatastore), 5, 3, sVoltage);  
+
+  if ( deltaTime == 0 ) {
+    buf = "{\"created_at\":\""+String()+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
+  } else {
+    buf = "[\"delta_t\":"+String(deltaTime)+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
+  }
+
+  return buf;
+}
+
+uint16_t jsonGetEntryLength(struct measurement *measureDatastore) {
+  return jsonCreateEntry(measureDatastore).length();
 }
 
 /***************************

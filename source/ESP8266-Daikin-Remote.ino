@@ -13,7 +13,7 @@
 #include "include/EEPROM_Data_Lib.h"
 #include "include/Battery_Lib.h"
 #include "include/Wifi_Lib.h"
-#include "include/CycleManager_Lib.h"
+#include "include/CycleManager/CycleManager.h"
 #include "include/Debug_Lib.h"
 #include "include/Scheduler_Lib.h"
 
@@ -49,7 +49,7 @@ void setup() {
 
   // Now that time is set, update other less usefull values
   measurement measure;  
-  iteration = getRTCPointer_iteration();
+  iteration = getRTCPointer_cycleManagerRTCData()->getIteration();
 
   /* -----------------------------------------------
       RESET OF THE MODULES

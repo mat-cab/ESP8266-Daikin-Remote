@@ -2,7 +2,9 @@
 #define EEPROM_DATA_LIB_H
 
 #include "Arduino.h"
+
 #include "Measurement.h"
+#include "Scheduler/Action.h"
 
 // EEPROM header page size (in bytes)
 // Header structure is the following:

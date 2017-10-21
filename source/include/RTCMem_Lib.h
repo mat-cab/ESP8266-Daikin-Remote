@@ -4,6 +4,7 @@
 #include "Arduino.h"
 
 #include "Scheduler/Scheduler_RTCData.h"
+#include "CycleManager/CycleManager_RTCData.h"
 
 // structures for the RTC memory
 struct {
@@ -14,14 +15,10 @@ struct {
 // Usefull data in the RTC memory
 // Note: this should be less than the 508 available bytes!
 struct rtcData {
-  // size of time_t: 
-  time_t timestamp;
-  // size of uint16_t: 2 bytes
-  uint16_t iteration;
-  // size of float: 
-  float cycle_factor;
   // size of Scheduler_RTCData: 5 bytes
   Scheduler_RTCData schedulerRTCData;
+  // size of CycleManager_RTCData: 
+  CycleManager_RTCData cycleManagerRTCData;
 };
 
 bool readRTCmemory();
@@ -33,8 +30,6 @@ int32_t getRTCmemCRC();
 void writeRTCmem();
 
 // Getters for the pointers
-time_t * getRTCPointer_timestamp();
-uint16_t * getRTCPointer_iteration();
-float * getRTCPointer_cycleFactor();
 Scheduler_RTCData * getRTCPointer_schedulerRTCData();
+CycleManager_RTCData * getRTCPointer_cycleManagerRTCData();
 #endif

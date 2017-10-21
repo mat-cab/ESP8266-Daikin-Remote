@@ -1,4 +1,4 @@
-#include "Arduino.h"
+#include "CycleManager/CycleManager.h"
 #include "SHT31_Lib.h"
 #include "Battery_Lib.h"
 #include "Measurement.h"
@@ -16,7 +16,7 @@ float getVoltage(struct measurement *measureDatastore) {
 }
 
 void performMeasurement(struct measurement *measureDatastore, uint16_t currentIteration) {
-  measureDatastore->iterationMoment = currentIteration;
+  measureDatastore->deltaWithLastMeasurement = getCycleTime(); 
   measureTemperatureHumidity(measureDatastore);
   measureBattery(measureDatastore);
 }

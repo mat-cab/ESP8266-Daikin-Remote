@@ -1,6 +1,8 @@
 #ifndef Wifi_Lib_H_
 #define Wifi_Lib_H_
 
+#include "Arduino.h"
+
 #include "Measurement.h"
 
 // Wifi delay loop time
@@ -30,7 +32,9 @@ void sendWifi();
 
 void jsonUpdate(String *jsonBuf);
 
-void jsonAddEntry(String* buf, struct measurement *measureDatastore);
+String jsonCreateEntry(struct measurement *measureDatastore);
+
+uint16_t jsonGetEntryLength(struct measurement *measureDatastore);
 
 void receiveWifi();
 #endif

@@ -3,6 +3,8 @@
 
 struct rtcData *RTCdata;
 
+static_assert( sizeof(RTCdata) < 508, "RTC data to be stored is too big");
+
 bool readRTCmemory() {
   boolean corruptedMem;
 
@@ -48,18 +50,10 @@ void writeRTCmem() {
   ESP.rtcUserMemoryWrite(0, (uint32_t*) &rtcRawData, sizeof(rtcRawData));
 }
 
-time_t * getRTCPointer_timestamp() {
-  return &(RTCdata->timestamp);
-}
-
-uint16_t * getRTCPointer_iteration() {
-  return &(RTCdata->iteration);
-}
-
-float * getRTCPointer_cycleFactor() {
-  return &(RTCdata->cycle_factor);
-}
-
 Scheduler_RTCData * getRTCPointer_schedulerRTCData() {
   return (&RTCdata->schedulerRTCData);
+}
+
+CycleManager_RTCData * getRTCPointer_cycleManagerRTCData() {
+  return (&RTCdata->cycleManagerRTCData);
 }

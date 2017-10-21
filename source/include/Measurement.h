@@ -5,7 +5,7 @@
 
 // structures for the meaasurement (stored in EEPROM)
 struct measurement {
-  uint16_t iterationMoment;
+  uint16_t deltaWithLastMeasurement;
   byte humidity[2];
   byte temperature[2];
   uint16_t voltage;
@@ -18,9 +18,4 @@ float getHumidity(struct measurement *measureDatastore);
 float getVoltage(struct measurement *measureDatastore);
 
 void performMeasurement(struct measurement *measureDatastore, uint16_t currentIteration);
-
-void writeMeasurementInEEPROM(struct measurement *measureDatastore);
-
-void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore);
-
 #endif
