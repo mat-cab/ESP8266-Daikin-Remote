@@ -1,11 +1,11 @@
 #include "Time.h"
 
-#include "Debug_Lib.h"
-#include "RTCMem_Lib.h"
-#include "EEPROM_Data_Lib.h"
-#include "Wifi_Lib.h"
+#include "../Debug_Lib.h"
+#include "../RTCMem_Lib.h"
+#include "../EEPROM_Data_Lib.h"
+#include "../Wifi/Wifi.h"
 
-#include "Scheduler_Lib.h"
+#include "Scheduler.h"
 
 Action * schedule;
 Action * nextActionOnSchedule;

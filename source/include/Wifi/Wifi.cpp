@@ -3,13 +3,14 @@
 #include "WiFiClientSecure.h"
 
 #include "Time.h"
-#include "CustomConstants.h"
-#include "EEPROM_Data_Lib.h"
-#include "CycleManager/CycleManager.h"
-#include "Debug_Lib.h"
-#include "RTCMem_Lib.h"
-#include "Scheduler_Lib.h"
-#include "Wifi_Lib.h"
+
+#include "../CustomConstants.h"
+#include "../EEPROM_Data_Lib.h"
+#include "../CycleManager/CycleManager.h"
+#include "../Debug_Lib.h"
+#include "../RTCMem_Lib.h"
+#include "../Scheduler/Scheduler.h"
+#include "Wifi.h"
 
 WiFiClient * client;
 
@@ -201,6 +202,7 @@ String jsonCreateEntry(struct measurement *measureDatastore) {
   dtostrf(getVoltage(measureDatastore), 5, 3, sVoltage);  
 
   if ( deltaTime == 0 ) {
+    // TODO: Specify appropriate start when deltaTime = 0
     buf = "{\"created_at\":\""+String()+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
   } else {
     buf = "[\"delta_t\":"+String(deltaTime)+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";

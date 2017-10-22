@@ -12,10 +12,10 @@
 #include "include/RTCMem_Lib.h"
 #include "include/EEPROM_Data_Lib.h"
 #include "include/Battery_Lib.h"
-#include "include/Wifi_Lib.h"
+#include "include/Wifi/Wifi.h"
 #include "include/CycleManager/CycleManager.h"
 #include "include/Debug_Lib.h"
-#include "include/Scheduler_Lib.h"
+#include "include/Scheduler/Scheduler.h"
 
 void setup() {
   // Save the power
@@ -88,7 +88,7 @@ void setup() {
   debug("Performing measurements ...");
 
   // Perform the measurements
-  performMeasurement(&measure, *iteration);
+  performMeasurement(&measure);
 
   // Send to debug
   debug(&measure);
