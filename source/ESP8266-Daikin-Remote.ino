@@ -19,7 +19,7 @@
 
 void setup() {
   // Save the power
-  initializeWifi();
+  disconnectWifi();
 
   // Initial declaration
   uint16_t *iteration;
@@ -51,6 +51,9 @@ void setup() {
   measurement measure;  
   iteration = getRTCPointer_cycleManagerRTCData()->getIteration();
 
+  // Also reset initialize the wifi library
+  initializeWifi();
+
   /* -----------------------------------------------
       RESET OF THE MODULES
       In case of corrupted RTC memory
@@ -61,7 +64,7 @@ void setup() {
      // Also send to debug
     debug("RTC memory is corrupted");
 
-    // reset the cycle manager (force an autoupdate)
+    // reset the cycle manager
     resetCycleManager();
 
     // reset the EEPROM
@@ -69,6 +72,9 @@ void setup() {
 
     // reset the scheduler
     resetScheduler();
+
+    // reset the wifi
+    resetWifi();
   }
 
   // send the schedule to the debug

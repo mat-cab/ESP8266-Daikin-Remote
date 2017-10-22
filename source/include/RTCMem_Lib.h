@@ -5,6 +5,7 @@
 
 #include "Scheduler/Scheduler_RTCData.h"
 #include "CycleManager/CycleManager_RTCData.h"
+#include "Wifi/Wifi_RTCData.h"
 
 // structures for the RTC memory
 struct {
@@ -19,6 +20,8 @@ struct rtcData {
   Scheduler_RTCData schedulerRTCData;
   // size of CycleManager_RTCData: 
   CycleManager_RTCData cycleManagerRTCData;
+  // size of Wifi_RTCData
+  Wifi_RTCData wifiRTCData;
 };
 
 bool readRTCmemory();
@@ -32,4 +35,5 @@ void writeRTCmem();
 // Getters for the pointers
 Scheduler_RTCData * getRTCPointer_schedulerRTCData();
 CycleManager_RTCData * getRTCPointer_cycleManagerRTCData();
+Wifi_RTCData * getRTCPointer_wifiRTCData();
 #endif

@@ -5,6 +5,7 @@
 #include "Time.h"
 
 #include "../CustomConstants.h"
+#include "../RTCMem_Lib.h"
 #include "../EEPROM_Data_Lib.h"
 #include "../CycleManager/CycleManager.h"
 #include "../Debug_Lib.h"
@@ -14,9 +15,20 @@
 
 WiFiClient * client;
 
+Wifi_RTCData * wifiRTCData;
+
 void initializeWifi() {
-  // Power off Wifi
-  WiFi.mode(WIFI_OFF);
+  // Set the appropriate pointer
+  wifiRTCData = getRTCPointer_wifiRTCData();  
+}
+
+void resetWifi() {
+  debug("Resetting the wifi");
+
+  // set the initial timestamp to 0
+  wifiRTCData->setTimestamp(getCurrentCycleStart());
+
+  debug("Reset done");
 }
 
 void connectToWifi() {
@@ -134,6 +146,9 @@ void sendWifi() {
         // reset the jsonBuffer to the rest of the next entry       
         jsonBuffer = nextEntry.substring( JSON_BUFFER_MAX_LENGTH - jsonBuffer.length() );
       }
+
+      // Also take this data into account for the RTC timestamp
+      updateRTCTimestamp(&recordedMeasure);
     }
 
     // Write the end of the JSON data
@@ -176,7 +191,7 @@ void sendWifi() {
             debug("Error reply was: "+str);
           }
         } else if (str.startsWith("Date: ")) {
-            updateTime( str.substring(6) );
+          updateTime( str.substring(6) );
         }
       }     
     }
@@ -202,8 +217,7 @@ String jsonCreateEntry(struct measurement *measureDatastore) {
   dtostrf(getVoltage(measureDatastore), 5, 3, sVoltage);  
 
   if ( deltaTime == 0 ) {
-    // TODO: Specify appropriate start when deltaTime = 0
-    buf = "{\"created_at\":\""+String()+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
+    buf = "{\"created_at\":\""+String(wifiRTCData->getTimestamp())+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
   } else {
     buf = "[\"delta_t\":"+String(deltaTime)+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
   }
@@ -213,6 +227,10 @@ String jsonCreateEntry(struct measurement *measureDatastore) {
 
 uint16_t jsonGetEntryLength(struct measurement *measureDatastore) {
   return jsonCreateEntry(measureDatastore).length();
+}
+
+void updateRTCTimestamp(struct measurement *measureDatastore) {
+  return wifiRTCData->increaseTimestamp( measureDatastore->deltaWithLastMeasurement );
 }
 
 /***************************

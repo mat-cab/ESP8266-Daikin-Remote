@@ -2,13 +2,6 @@
 
 #include "CycleManager_RTCData.h"
 
-CycleManager_RTCData::CycleManager_RTCData() {
-  this->cycle_factor = CYCLE_FACTOR;
-  this->cycle_time = CYCLE_TIME;
-  this->timestamp = 0;
-  this->iteration = 0;
-}
-
 float * CycleManager_RTCData::getCycleFactor() {
   return &(this->cycle_factor);
 }
@@ -23,4 +16,8 @@ uint16_t * CycleManager_RTCData::getIteration() {
 
 uint16_t * CycleManager_RTCData::getCycleTime() {
   return &(this->cycle_time);
+}
+
+uint16_t * CycleManager_RTCData::getLastIteration() {
+  return &(this->lastIteration);
 }

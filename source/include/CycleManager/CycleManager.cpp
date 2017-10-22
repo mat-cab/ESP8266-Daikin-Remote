@@ -12,6 +12,7 @@ CycleManager_RTCData * cycleManagerRTCData;
 float *cycleFactor;
 time_t *timestamp;
 uint16_t *iteration;
+uint16_t *lastIteration;
 uint16_t *cycleTime;
 bool reset;
 
@@ -32,6 +33,8 @@ void initializeCycleManager() {
 
   // Read cycleFactor pointer from RTC memory
   cycleFactor = cycleManagerRTCData->getCycleFactor();
+  // Read the last iteration from RTC memory
+  lastIteration = cycleManagerRTCData->getLastIteration();
 }
 
 void resetCycleManager() {
@@ -44,11 +47,17 @@ void resetCycleManager() {
   // reset the iterations to 0
   *iteration = 0;
 
+  // reset the last iteration to 0
+  *lastIteration = 0;
+
   // set the reset flag to true
   reset = true;
 }
 
 void updateCycleManager() {
+  // Save the last iteration
+  *lastIteration = *iteration;
+
   // Compute the next iterations (in case of cycle overflow)
   *iteration = *iteration + (1 + millis() / (*cycleTime * 1000));
 }
@@ -147,4 +156,12 @@ void updateTime(String timestampString) {
 
 uint16_t getCycleTime() {
   return *cycleTime;
+}
+
+uint16_t getIterationsFromLastCycle() {
+  return (*lastIteration - *iteration);
+}
+
+time_t getCurrentCycleStart() {
+  return (now() - (millis()-1000)/1000);
 }

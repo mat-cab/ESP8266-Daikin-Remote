@@ -3,7 +3,7 @@
 
 struct rtcData *RTCdata;
 
-static_assert( sizeof(RTCdata) < 508, "RTC data to be stored is too big");
+static_assert( sizeof(rtcData) <= 508, "RTC data to be stored is too big");
 
 bool readRTCmemory() {
   boolean corruptedMem;
@@ -56,4 +56,8 @@ Scheduler_RTCData * getRTCPointer_schedulerRTCData() {
 
 CycleManager_RTCData * getRTCPointer_cycleManagerRTCData() {
   return (&RTCdata->cycleManagerRTCData);
+}
+
+Wifi_RTCData * getRTCPointer_wifiRTCData() {
+  return (&RTCdata->wifiRTCData);
 }

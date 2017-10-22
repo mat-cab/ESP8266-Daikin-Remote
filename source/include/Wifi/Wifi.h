@@ -24,6 +24,8 @@
 
 void initializeWifi();
 
+void resetWifi();
+
 void connectToWifi();
 
 void disconnectWifi();
@@ -35,6 +37,8 @@ void jsonUpdate(String *jsonBuf);
 String jsonCreateEntry(struct measurement *measureDatastore);
 
 uint16_t jsonGetEntryLength(struct measurement *measureDatastore);
+
+void updateRTCTimestamp(struct measurement *measureDatastore);
 
 void receiveWifi();
 #endif

@@ -14,15 +14,15 @@ class CycleManager_RTCData {
   uint16_t iteration;
   // 2 bytes: Cycle time
   uint16_t cycle_time;
+  // 2 bytes: Last iteration in the cycle
+  uint16_t lastIteration;
 
   public:
-  // Constructors
-  CycleManager_RTCData();
-
   // Getters
   float * getCycleFactor();
   time_t * getTimestamp();
   uint16_t * getIteration();
   uint16_t * getCycleTime();
+  uint16_t * getLastIteration();
 };
 #endif

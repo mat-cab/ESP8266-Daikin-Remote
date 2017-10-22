@@ -21,4 +21,8 @@ void updateCycleFactor(uint32_t timeShift, uint32_t timeSpan);
 void updateTime(String timestamp); 
 
 uint16_t getCycleTime();
+
+uint16_t getIterationsFromLastCycle();
+
+time_t getCurrentCycleStart();
 #endif
