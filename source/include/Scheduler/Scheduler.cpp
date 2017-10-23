@@ -5,6 +5,8 @@
 #include "../EEPROM_Data_Lib.h"
 #include "../Wifi/Wifi.h"
 
+#include "ActionStaticFunctions.h"
+
 #include "Scheduler.h"
 
 Action * schedule;

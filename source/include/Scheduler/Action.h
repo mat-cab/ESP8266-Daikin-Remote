@@ -12,7 +12,7 @@
 
 class Action {
   // Attributes
-  private:
+  protected:
   // Internal variable
   // For data storage
   TimeMask *tMask;
@@ -30,6 +30,8 @@ class Action {
   Action();
   Action(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second);
   Action(TimeMask *tMask, ActionMask *aMask, uint8_t *aDataPointer);
+
+  // Initializers
 
   // Getters
   Action * getNextAction() const;
@@ -53,10 +55,12 @@ class Action {
   // Actions
   void run();
 
+  // Virtual functions
+  virtual void initializeAdditionalData(uint8_t * aDataPointer);
+  virtual void runAction() const;
+  virtual void addAdditionalActionData(char * argument, uint8_t argumentNumber) const;
+
   // Debug actions
   void print() const;
 };
-
-// Static methods
-Action * parseActionFromString(String actionString);
 #endif

@@ -3,7 +3,10 @@
 #include "EEPROM_Lib.h"
 #include "Measurement.h"
 #include "Scheduler/Action.h"
+#include "Scheduler/ActionStaticFunctions.h"
 #include "EEPROM_Data_Lib.h"
+
+// TODO: Introduce a new counter for the measurements (to have a start and an end)
 
 void resetEEPROM() {
   // Reset the EEPROM counters to 0
@@ -110,7 +113,7 @@ void readScheduleFromEEPROM(Action **schedule) {
     readEEPROM( EEPROM_HEADER_SIZE + counter, (byte*) dataBuffer, sizeof(dataBuffer));
 
     // Create a new action with the appropriate TimeMask and ActionMask
-    newAction = new Action(new TimeMask(dataBuffer+sizeof(ActionMask)),new ActionMask(dataBuffer), dataBuffer+sizeof(ActionMask)+sizeof(TimeMask));
+    newAction = getNewAction(new TimeMask(dataBuffer+sizeof(ActionMask)),new ActionMask(dataBuffer), dataBuffer+sizeof(ActionMask)+sizeof(TimeMask));
 
     // If it is the first time we read (counter is empty), then update the schedule variable
     if (counter == 0) {

@@ -1,4 +1,5 @@
 #include "Action.h"
+#include "ActionStaticFunctions.h"
 
 #include "Scheduler_RTCData.h"
 
@@ -16,7 +17,7 @@ Action * Scheduler_RTCData::getAction() {
   if (this->aMask.isEmpty()) {
     return NULL;
   } else {
-    return new Action(&(this->tMask),&(this->aMask), NULL);
+    return getNewAction(&(this->tMask),&(this->aMask), NULL);
   }
 }
 
