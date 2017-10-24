@@ -63,6 +63,8 @@ void updateCycleManager() {
 }
 
 uint32_t getNextCycle() {
+  // TODO: Allow to wake up at the next action (and not necessarly on a cycle)
+
   uint32_t waitMillis = *cycleTime * 1000 * (1 + millis() / (*cycleTime * 1000));
   uint32_t waitMicros = (waitMillis*1000-micros())*(*cycleFactor);
 

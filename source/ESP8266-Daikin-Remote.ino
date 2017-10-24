@@ -90,6 +90,8 @@ void setup() {
       Scheduler is run
   -------------------------------------------------- */
 
+  // TODO: Add the possibility to enable/disable measurements
+
   // Send debug message
   debug("Performing measurements ...");
 
@@ -129,6 +131,7 @@ void setup() {
   writeRTCmem();  
   
   // Go do deepsleep until the cycle manager says so
+  // TODO: Improve the deepSleep management to allow for longer deep sleeps (>71 minutes)
   ESP.deepSleep(getNextCycle());
 }
 

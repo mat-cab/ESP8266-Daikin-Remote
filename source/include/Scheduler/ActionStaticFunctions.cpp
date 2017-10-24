@@ -2,26 +2,46 @@
 
 #include "Action.h"
 
+#include "Actions/EMPTY_ACTION/Action_EMPTY_ACTION.h"
 #include "Actions/AC_START/Action_AC_START.h"
+#include "Actions/AC_STOP/Action_AC_STOP.h"
 #include "Actions/UPDATE_CYCLE/Action_UPDATE_CYCLE.h"
+#include "Actions/UPDATE_SCHEDULE/Action_UPDATE_SCHEDULE.h"
+#include "Actions/SEND_MEASURE/Action_SEND_MEASURE.h"
 
 #include "ActionStaticFunctions.h"
 
 Action * getNewAction(TimeMask * timeMask, ActionMask * aMask, uint8_t * aDataPointer) {
   switch (aMask->getActionType()) {
+    case EMPTY_ACTION:
+      return new Action_EMPTY_ACTION(timeMask, aMask, aDataPointer );
     case AC_START:
       return new Action_AC_START(timeMask, aMask, aDataPointer);
+    case AC_STOP:
+      return new Action_AC_STOP(timeMask, aMask, aDataPointer);
     case UPDATE_CYCLE:
       return new Action_UPDATE_CYCLE(timeMask, aMask, aDataPointer);
+    case UPDATE_SCHEDULE:
+      return new Action_UPDATE_SCHEDULE(timeMask, aMask, aDataPointer);
+    case SEND_MEASURE:
+      return new Action_SEND_MEASURE(timeMask, aMask, aDataPointer);
   }
 }
 
 Action * getNewAction(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second) {
   switch (actionType) {
+    case EMPTY_ACTION:
+      return new Action_EMPTY_ACTION(actionType, dMask, hour, minute, second);
     case AC_START:
       return new Action_AC_START(actionType, dMask, hour, minute, second);
+    case AC_STOP:
+      return new Action_AC_STOP(actionType, dMask, hour, minute, second);
     case UPDATE_CYCLE:
       return new Action_UPDATE_CYCLE(actionType, dMask, hour, minute, second);
+    case UPDATE_SCHEDULE:
+      return new Action_UPDATE_SCHEDULE(actionType, dMask, hour, minute, second);
+    case SEND_MEASURE:
+      return new Action_SEND_MEASURE(actionType, dMask, hour, minute, second);
   }
 }
 
