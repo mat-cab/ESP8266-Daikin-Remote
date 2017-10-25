@@ -1,5 +1,7 @@
 #include "../../../Debug_Lib.h"
 
+#include "../../../Wifi/Wifi.h"
+
 #include "Action_SEND_MEASURE.h"
 
 Action_SEND_MEASURE::Action_SEND_MEASURE(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second) : Action(actionType, dMask, hour, minute, second) {
@@ -11,7 +13,11 @@ Action_SEND_MEASURE::Action_SEND_MEASURE(TimeMask *tMask, ActionMask *aMask, uin
 }
 
 void Action_SEND_MEASURE::runAction() const {
-  debug("Sending the SEND_MEASURE command!");
+  // First connect to the Wifi
+  connectToWifi();
+
+  // Then send the measures to the server
+  sendWifi();  
 }
 
 void Action_SEND_MEASURE::addAdditionalActionData(char * argument, uint8_t argumentNumber) const {
