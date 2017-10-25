@@ -11,7 +11,6 @@ Action_EMPTY_ACTION::Action_EMPTY_ACTION(TimeMask *tMask, ActionMask *aMask, uin
 }
 
 void Action_EMPTY_ACTION::runAction() const {
-  debug("Sending the EMPTY_ACTION command!");
 }
 
 void Action_EMPTY_ACTION::addAdditionalActionData(char * argument, uint8_t argumentNumber) const {
