@@ -79,6 +79,22 @@ void updateCycleFactor(uint32_t timeShift, uint32_t timeSpan) {
   }
 }
 
+void updateCycleTime(uint32_t newCycleTime) {
+  // save the cycle start
+  time_t cycleStart = getCurrentCycleStart();
+  
+  // set the new cycle time
+  *cycleTime = newCycleTime;
+
+  // reset the last iteration to 0
+  *lastIteration = 0;
+  // reset the iterations to 1 (to avoid having 0 iterations in a cycle)
+  *iteration = 1;
+
+  // reset the timestamp to the cycle start
+  *timestamp = cycleStart;
+} 
+
 void updateTime(String timestampString) {
   time_t lastTimestamp = now();
   uint32_t currentMillis = millis();

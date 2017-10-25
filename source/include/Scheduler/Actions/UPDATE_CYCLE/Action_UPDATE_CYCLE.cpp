@@ -22,13 +22,20 @@ void Action_UPDATE_CYCLE::initializeAdditionalData(uint8_t * aDataPointer) {
 }
 
 void Action_UPDATE_CYCLE::runAction() const {
-  debug("Updating the cycle time to "+String(((AdditionalData_UPDATE_CYCLE*)this->aData)->getCycleTime())+" ms");
+  AdditionalData_UPDATE_CYCLE *actionData = (AdditionalData_UPDATE_CYCLE *)this->aData;
+
+  // Verify that new cycle time is not zero
+  if (actionData->getCycleTime() > 0) {
+    updateCycleTime(actionData->getCycleTime());
+  }
 }
 
 void Action_UPDATE_CYCLE::addAdditionalActionData(char * argument, uint8_t argumentNumber) const {
+  AdditionalData_UPDATE_CYCLE *actionData = (AdditionalData_UPDATE_CYCLE *)this->aData;
+
   switch (argumentNumber) {
     case 1:
-      ((AdditionalData_UPDATE_CYCLE*)aData)->setCycleTime(atoi(argument));
+      actionData->setCycleTime(atoi(argument));
       break;
     default:
       debug("Unknown argument added to the UPDATE_CYCLE action: "+String(argument));

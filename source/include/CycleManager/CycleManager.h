@@ -18,6 +18,8 @@ uint32_t getNextCycle();
 
 void updateCycleFactor(uint32_t timeShift, uint32_t timeSpan);
 
+void updateCycleTime(uint32_t newCycleTime);
+
 void updateTime(String timestamp); 
 
 uint16_t getCycleTime();
