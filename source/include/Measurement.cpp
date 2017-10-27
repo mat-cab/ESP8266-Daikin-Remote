@@ -15,6 +15,10 @@ float getVoltage(struct measurement *measureDatastore) {
   return (measureDatastore->voltage/ 531.0 * 3.314);
 }
 
+uint16_t getDelta(struct measurement *measureDatastore) {
+  return (measureDatastore->deltaWithLastMeasurement);
+}
+
 void performMeasurement(struct measurement *measureDatastore) {
   measureDatastore->deltaWithLastMeasurement = getCycleTime() * getIterationsFromLastCycle(); 
   measureTemperatureHumidity(measureDatastore);

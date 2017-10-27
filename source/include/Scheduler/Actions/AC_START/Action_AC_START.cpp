@@ -13,7 +13,7 @@ Action_AC_START::Action_AC_START(TimeMask *tMask, ActionMask *aMask, uint8_t *aD
 }
 
 void Action_AC_START::initializeAdditionalData(uint8_t * aDataPointer) {
-  if ( aDataPointer = NULL ) {
+  if ( aDataPointer == NULL ) {
     this->aData = new AdditionalData_AC_START();
   } else {
     this->aData = new AdditionalData_AC_START(aDataPointer);

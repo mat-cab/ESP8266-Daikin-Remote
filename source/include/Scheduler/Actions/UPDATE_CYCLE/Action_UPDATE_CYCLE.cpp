@@ -14,7 +14,7 @@ Action_UPDATE_CYCLE::Action_UPDATE_CYCLE(TimeMask *tMask, ActionMask *aMask, uin
 }
 
 void Action_UPDATE_CYCLE::initializeAdditionalData(uint8_t * aDataPointer) {
-  if ( aDataPointer = NULL ) {
+  if ( aDataPointer == NULL ) {
     this->aData = new AdditionalData_UPDATE_CYCLE();
   } else {
     this->aData = new AdditionalData_UPDATE_CYCLE(aDataPointer);

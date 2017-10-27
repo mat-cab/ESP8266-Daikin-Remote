@@ -34,5 +34,5 @@ void AdditionalData_UPDATE_CYCLE::setCycleTime(uint32_t newCycle) {
 
 void AdditionalData_UPDATE_CYCLE::print() const {
   debug("Additional data:");
-  debug("- new cycle time: "+String(this->getCycleTime())+" ms");
+  debug("- new cycle time: "+String(this->getCycleTime())+" s");
 }

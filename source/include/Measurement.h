@@ -17,5 +17,7 @@ float getHumidity(struct measurement *measureDatastore);
 
 float getVoltage(struct measurement *measureDatastore);
 
+uint16_t getDelta(struct measurement *measureDatastore);
+
 void performMeasurement(struct measurement *measureDatastore);
 #endif

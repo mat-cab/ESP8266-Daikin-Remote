@@ -1,6 +1,6 @@
 #include "../../../Debug_Lib.h"
 
-#include "../../../Wifi/Wifi.h"
+#include "../../Scheduler.h"
 
 #include "Action_UPDATE_SCHEDULE.h"
 
@@ -13,11 +13,8 @@ Action_UPDATE_SCHEDULE::Action_UPDATE_SCHEDULE(TimeMask *tMask, ActionMask *aMas
 }
 
 void Action_UPDATE_SCHEDULE::runAction() const {
-  // First connect to the Wifi
-  connectToWifi();
-
-  // Then get the schedule from the server
-  receiveWifi();
+  // reset the scheduler
+  resetScheduler();
 }
 
 void Action_UPDATE_SCHEDULE::addAdditionalActionData(char * argument, uint8_t argumentNumber) const {

@@ -26,7 +26,7 @@ void initializeCycleManager() {
   cycleTime = cycleManagerRTCData->getCycleTime();
 
   // Set the estimated local time
-  setTime( *timestamp + (time_t)(*cycleTime*(*iteration + 1)));  
+  setTime( *timestamp + (time_t)(*cycleTime*(*iteration)));  
 
   // initialize with no reset
   reset = false;
@@ -60,6 +60,10 @@ void updateCycleManager() {
 
   // Compute the next iterations (in case of cycle overflow)
   *iteration = *iteration + (1 + millis() / (*cycleTime * 1000));
+
+  if ((*iteration - *lastIteration) > 1) {
+    debug("Skipped one cycle : from "+String(*lastIteration)+" to "+String(*iteration));
+  }
 }
 
 uint32_t getNextCycle() {
@@ -80,16 +84,22 @@ void updateCycleFactor(uint32_t timeShift, uint32_t timeSpan) {
 }
 
 void updateCycleTime(uint32_t newCycleTime) {
+  debug("Updating cycle time");
+
   // save the cycle start
   time_t cycleStart = getCurrentCycleStart();
-  
+
+  // save the number of cycles since the last cycle
+  uint16_t lastCycleIteration = getIterationsFromLastCycle();
+ 
+  debug("Setting new cycle time to "+String(newCycleTime));
   // set the new cycle time
   *cycleTime = newCycleTime;
 
   // reset the last iteration to 0
   *lastIteration = 0;
   // reset the iterations to 1 (to avoid having 0 iterations in a cycle)
-  *iteration = 1;
+  *iteration = lastCycleIteration;
 
   // reset the timestamp to the cycle start
   *timestamp = cycleStart;
@@ -169,7 +179,12 @@ void updateTime(String timestampString) {
   // Set the time in the RTC memory
   // Note: the cycle time is the time at the beginning of the iteration
   // Therefore it is necessary to remove the millis since the start of the iteration
-  *timestamp = newTime - ((currentMillis-1000)/1000);
+  *timestamp = newTime - (currentMillis/(uint32_t)1000);
+
+  // reset the last iteration to 0
+  *lastIteration = 0;
+  // reset the iterations to 1 (to avoid having 0 iterations in a cycle)
+  *iteration = 0;
 }
 
 uint16_t getCycleTime() {
@@ -177,9 +192,11 @@ uint16_t getCycleTime() {
 }
 
 uint16_t getIterationsFromLastCycle() {
-  return (*lastIteration - *iteration);
+  return (*iteration - *lastIteration);
 }
 
 time_t getCurrentCycleStart() {
-  return (now() - (millis()-1000)/1000);
+  uint32_t currentMillis = (uint32_t)(millis())/((uint32_t)1000);
+  time_t timeNow = now();
+  return timeNow - currentMillis;
 }

@@ -37,5 +37,7 @@ void debug(struct measurement *measure) {
 
   dtostrf(getVoltage(measure), 0, 3, fConverter);
   Serial.println("Battery voltage : "+String(fConverter)+" V");
+
+  Serial.println("Delta with last measure : "+String( getDelta(measure) )+" s");
 #endif
 }

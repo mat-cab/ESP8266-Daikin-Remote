@@ -45,6 +45,9 @@ void resetScheduler() {
   // write in EEPROM
   writeScheduleInEEPROM(schedule); 
 
+  // Also update the last day of execution
+  lastDayOfExecution = weekday();
+
   // save in RTC Memory
   saveSchedulerInRTCMem();
 

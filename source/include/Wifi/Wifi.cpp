@@ -86,7 +86,7 @@ void sendWifi() {
 
 
     // Compute the JSON string length (initial and final part of the string)
-    uint32_t dataLength = jsonBuffer.length() + 4;
+    uint32_t dataLength = jsonBuffer.length() + 3;
 
     // loop through all measurement
     for (uint16_t i=0; i<EEPROMcounter; i++) {
@@ -95,14 +95,17 @@ void sendWifi() {
       // Add the length to the total length
       dataLength += jsonGetEntryLength(&recordedMeasure);
     }
+
+    // Also add the , between the measures
+    dataLength += EEPROMcounter;
     
     // Output message
     debug("Sending the update request...");
-    debug("JSON data is following (length is "+String(dataLength)+" bytes for "+EEPROMcounter+" records)");
+    debug("JSON data is following (length is "+String(dataLength)+" bytes for "+EEPROMcounter+1+" records)");
 
     delay(WIFI_WAIT);
 
-    uint16_t writtenData = 0, totalWrittenData = 0;
+    uint16_t writtenData = 0, totalWrittenData = 0, currentDataLength = 0;
 
     // Send the beginning of the request
     sprintf(header, "POST /channels/%s/bulk_update.json HTTP/1.1", IOT_CHANNEL_ID);
@@ -115,9 +118,13 @@ void sendWifi() {
     client->println();
 
     // Loop through all the remaining entries
-    for (uint16_t i=1; i<EEPROMcounter; i++) {
+    for (uint16_t i=0; i<EEPROMcounter; i++) {
       // Read a measurement from the EEPROM
       readMeasurementFromEEPROM(i, &recordedMeasure);
+
+      // First increase the timestamp in the RTC memory (delta is wrt last measure)
+      updateRTCTimestamp(&recordedMeasure);
+
       // Add the new entry to the JSON string
       nextEntry = jsonCreateEntry(&recordedMeasure);
 
@@ -126,11 +133,11 @@ void sendWifi() {
       }
 
       // Add what is possible to the next 
-      jsonBuffer += nextEntry.substring(0, min( nextEntry.length(), JSON_BUFFER_MAX_LENGTH - jsonBuffer.length() - 1));
+      currentDataLength = min( nextEntry.length(), JSON_BUFFER_MAX_LENGTH - jsonBuffer.length());
+      jsonBuffer += nextEntry.substring(0, currentDataLength);
 
       // If current buffer is full
       if ( jsonBuffer.length() == JSON_BUFFER_MAX_LENGTH ) {
-
         // Send to debug
         debug(jsonBuffer);
 
@@ -144,11 +151,8 @@ void sendWifi() {
         totalWrittenData += writtenData;
 
         // reset the jsonBuffer to the rest of the next entry       
-        jsonBuffer = nextEntry.substring( JSON_BUFFER_MAX_LENGTH - jsonBuffer.length() );
+        jsonBuffer = nextEntry.substring( currentDataLength );
       }
-
-      // Also take this data into account for the RTC timestamp
-      updateRTCTimestamp(&recordedMeasure);
     }
 
     // Write the end of the JSON data
@@ -192,6 +196,9 @@ void sendWifi() {
           }
         } else if (str.startsWith("Date: ")) {
           updateTime( str.substring(6) );
+        } else if (retry) {
+          // There was an error, print the output message
+          debug(str);
         }
       }     
     }
@@ -216,12 +223,13 @@ String jsonCreateEntry(struct measurement *measureDatastore) {
   dtostrf(getHumidity(measureDatastore), 5, 2, sHumidity);
   dtostrf(getVoltage(measureDatastore), 5, 3, sVoltage);  
 
-  if ( deltaTime == 0 ) {
-    buf = "{\"created_at\":\""+String(wifiRTCData->getTimestamp())+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
-  } else {
-    buf = "[\"delta_t\":"+String(deltaTime)+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
-  }
+  time_t startTimestamp = wifiRTCData->getTimestamp();
 
+  char startTimestampChar[22];
+  sprintf(startTimestampChar, "%04u-%02u-%02u %02u:%02u:%02u ", year(startTimestamp), month(startTimestamp), day(startTimestamp), hour(startTimestamp), minute(startTimestamp), second(startTimestamp));
+
+  buf = "{\"created_at\":\""+String(startTimestampChar)+String(TIMEZONE)+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
+  
   return buf;
 }
 
@@ -253,6 +261,8 @@ void receiveWifi() {
     client->println("Host: "+String(GIST_SERVER));
     client->println("Connection: close");
     client->println();
+
+    // TODO: Clear the schedule only when it is sure we will receive the new one
 
     // Here is the response
     while (client->connected()) {

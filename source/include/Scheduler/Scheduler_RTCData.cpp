@@ -14,7 +14,7 @@ uint8_t Scheduler_RTCData::getLastDayOfExecution() const {
 
 Action * Scheduler_RTCData::getAction() {
   // If the timemask is empty (should not be)
-  if (this->aMask.isEmpty()) {
+  if (this->tMask.getDaysMask() == 0) {
     return NULL;
   } else {
     return getNewAction(&(this->tMask),&(this->aMask), NULL);
