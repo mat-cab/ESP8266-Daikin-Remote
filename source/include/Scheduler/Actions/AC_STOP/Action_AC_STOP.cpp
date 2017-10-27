@@ -1,4 +1,5 @@
 #include "../../../Debug_Lib.h"
+#include "../../../IR_Lib.h"
 
 #include "Action_AC_STOP.h"
 
@@ -11,7 +12,7 @@ Action_AC_STOP::Action_AC_STOP(TimeMask *tMask, ActionMask *aMask, uint8_t *aDat
 }
 
 void Action_AC_STOP::runAction() const {
-  debug("Sending the AC_STOP command!");
+  sendIRStop();
 }
 
 void Action_AC_STOP::addAdditionalActionData(char * argument, uint8_t argumentNumber) const {

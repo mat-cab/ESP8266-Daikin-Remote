@@ -101,7 +101,7 @@ void sendWifi() {
     
     // Output message
     debug("Sending the update request...");
-    debug("JSON data is following (length is "+String(dataLength)+" bytes for "+EEPROMcounter+1+" records)");
+    debug("JSON data is following (length is "+String(dataLength)+" bytes for "+(EEPROMcounter+1)+" records)");
 
     delay(WIFI_WAIT);
 

@@ -1,4 +1,5 @@
 #include "../../../Debug_Lib.h"
+#include "../../../IR_Lib.h"
 
 #include "AdditionalData_AC_START.h"
 
@@ -21,7 +22,9 @@ void Action_AC_START::initializeAdditionalData(uint8_t * aDataPointer) {
 }
 
 void Action_AC_START::runAction() const {
-  debug("Sending the AC_START command!");
+  AdditionalData_AC_START *actionData = (AdditionalData_AC_START *)this->aData;
+
+  sendIRCommand(actionData->getACMode(), actionData->getTemperature(), actionData->getFanSpeed(), actionData->getSwingLR(), actionData->getSwingUD(), actionData->getPowerful(), actionData->getSilent());
 }
 
 void Action_AC_START::addAdditionalActionData(char * argument, uint8_t argumentNumber) const {

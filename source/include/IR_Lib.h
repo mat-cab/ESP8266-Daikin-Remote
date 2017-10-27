@@ -6,5 +6,7 @@
 
 void initializeIR();
 
-void testIR();
+void sendIRCommand(uint8_t mode, uint8_t temperature, uint8_t fanSpeed, bool swingLR, bool swingUD, bool powerful, bool silent);
+
+void sendIRStop();
 #endif

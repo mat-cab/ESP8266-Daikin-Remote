@@ -19,24 +19,40 @@ void initializeIR() {
   debug("Done!");
 }
 
-void testIR() {
+void sendIRCommand(uint8_t mode, uint8_t temperature, uint8_t fanSpeed, bool swingLR, bool swingUD, bool powerful, bool silent) {
   debug("Setting up IR signal...");
 
   // Set AC to ON
   daikinir.on();
 
-  // Set fan to auto
-  daikinir.setFan(0);
+  // Set fan
+  daikinir.setFan(fanSpeed);
 
-  // Set temperature to 26
-  daikinir.setTemp(26);
+  // Set temperature
+  daikinir.setTemp(temperature);
 
-  // set mode to cool
-  daikinir.setMode(DAIKIN_COOL);
+  // set mode
+  daikinir.setMode(mode);
 
-  // set swings to no
-  daikinir.setSwingVertical(0);
-  daikinir.setSwingHorizontal(0);
+  // set swings
+  daikinir.setSwingVertical(swingUD);
+  daikinir.setSwingHorizontal(swingLR);
+
+  // set auxiliaries
+  daikinir.setPowerful(powerful);
+  daikinir.setQuiet(silent);
+
+  debug("Sending IR signal...");
+
+  // Send the signal
+  daikinir.send();
+}
+
+void sendIRStop() {
+  debug("Setting up IR signal...");
+
+  // Set AC to OFF
+  daikinir.off();
 
   debug("Sending IR signal...");
 
