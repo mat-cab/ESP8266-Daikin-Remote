@@ -4,48 +4,68 @@
 #include "../Measurement.h"
 #include "../Scheduler/Action.h"
 #include "../Scheduler/ActionStaticFunctions.h"
+
+#include "EEPROM_Header.h"
+
 #include "ExPROM.h"
 
 // TODO: Introduce a new counter for the measurements (to have a start and an end)
 
+// Verify that the size of the hader is less than the allowed space
+static_assert( sizeof(EEPROM_Header) <= EEPROM_HEADER_SIZE, "EEPROM Header is bigger than the allowed size");
+
+EEPROM_Header * eeHeader;
+
 void resetEEPROM() {
-  // Reset the EEPROM counters to 0
-  resetMeasurementEEPROM();
-  writeEEPROMEndOfScheduleCounter(0);
+  // read the header if necessary
+  checkEEPROMHeader();
+
+  // reset the header
+  eeHeader->reset();
 }
 
-void resetMeasurementEEPROM() {
-  writeEEPROMMeasurementCounter(0);
+void writeEEPROM() {
+  writeEEPROMHeader();
+}
+
+/*********************
+ * Header operations
+ *********************/
+void readEEPROMHeader() {
+  readEEPROM(0, (byte*)&eeHeader, sizeof(EEPROM_Header));
+}
+
+void writeEEPROMHeader() {
+  writeEEPROM(0, (byte*)&eeHeader, sizeof(EEPROM_Header));
+}
+
+void checkEEPROMHeader() {
+  if (eeHeader == NULL) {
+    readEEPROMHeader();
+  }
 }
 
 /******************* 
  * Measurement part
  *******************/
-
 uint16_t readEEPROMMeasurementCounter() {
-  uint16_t counter = 0;
-
-  // Read at address 0 the counter
-  readEEPROM(0, (byte*)&counter, sizeof(uint16_t));
+  checkEEPROMHeader();
 
   // Return the value
-  return counter;
+  return eeHeader->getMeasurementIndex();
 }
 
 void writeEEPROMMeasurementCounter(uint16_t newCounter) {
-  // Write value at address 0
-  writeEEPROM( 0, (byte*)&newCounter, sizeof(uint16_t));
+  checkEEPROMHeader();
+
+  eeHeader->setMeasurementIndex(newCounter);
 }
 
 void writeMeasurementInEEPROM(struct measurement *measureDatastore) {
-  // First read the counter
-  uint16_t counter = readEEPROMMeasurementCounter();
+  checkEEPROMHeader();
 
   // Write in the next available slot and increase counter
-  writeEEPROM( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + counter++ * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
-
-  // Update the counter
-  writeEEPROMMeasurementCounter(counter);
+  writeEEPROM( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + eeHeader->increaseMeasurementIndex() * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
 }
 
 void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore) {
@@ -58,25 +78,28 @@ void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *m
  *******************/
 
 uint16_t readEEPROMEndOfScheduleCounter() {
-  uint16_t counter = 0;
-
-  readEEPROM(sizeof(uint16_t), (byte*)&counter, sizeof(uint16_t));
+  checkEEPROMHeader();
 
   // Return the value
-  return counter;
+  return eeHeader->getActionIndex();
 }
 
 void writeEEPROMEndOfScheduleCounter(uint16_t newCounter) {
-  // Write value at appropriate address
-  writeEEPROM(sizeof(uint16_t), (byte*)&newCounter, sizeof(uint16_t));
+  checkEEPROMHeader();
+
+  eeHeader->setActionIndex(newCounter);
 }
 
 void writeScheduleInEEPROM(Action * schedule) {
   Action * currentAction = schedule;
-  uint16_t counter = 0;
   // Max size for an action : 32 bytes
   uint8_t dataBuffer[32];
   uint8_t actionSize = 0;
+
+  checkEEPROMHeader();
+
+  // reset the actionIndex
+  eeHeader->resetActionIndex();
 
   while ( currentAction != NULL ) {
     actionSize = sizeof(TimeMask) + sizeof(ActionMask) + currentAction->getActionMask()->getSecondaryData();
@@ -89,26 +112,23 @@ void writeScheduleInEEPROM(Action * schedule) {
       memcpy(dataBuffer + sizeof(ActionMask) + sizeof(TimeMask), currentAction->getAdditionalData()->getRawData(), currentAction->getActionMask()->getSecondaryData());
     }
 
-    writeEEPROM( EEPROM_HEADER_SIZE + counter, (byte*)dataBuffer, actionSize);
+    writeEEPROM( EEPROM_HEADER_SIZE + eeHeader->getActionIndex(), (byte*)dataBuffer, actionSize);
 
-    counter += actionSize;
+    eeHeader->increaseActionIndex(actionSize);
 
     currentAction = currentAction->getNextAction();
   }
-
-  // Update the counter
-  writeEEPROMEndOfScheduleCounter(counter);
 }
 
 void readScheduleFromEEPROM(Action **schedule) {
-  uint16_t EndOfSchedule = readEEPROMEndOfScheduleCounter();
   uint16_t counter = 0;
-
   uint8_t dataBuffer[32];
 
   Action *newAction, *currentAction;
 
-  while (counter < EndOfSchedule) {
+  checkEEPROMHeader();
+
+  while (counter < eeHeader->getActionIndex()) {
     // Always read more then necessary
     readEEPROM( EEPROM_HEADER_SIZE + counter, (byte*) dataBuffer, sizeof(dataBuffer));
 

@@ -1,5 +1,5 @@
-#ifndef EEPROM_H_
-#define EEPROM_H_
+#ifndef EXPROM_H_
+#define EXPROM_H_
 
 #include "Arduino.h"
 
@@ -18,8 +18,14 @@
 // Half of the EEPROM remains empty...
 
 void resetEEPROM();
-void resetMeasurementEEPROM();
+void writeEEPROM();
 
+// Header operations
+void readEEPROMHeader();
+void writeEEPROMHeader();
+void checkEEPROMHeader();
+
+// Measurement operations
 uint16_t readEEPROMMeasurementCounter();
 
 void writeEEPROMMeasurementCounter(uint16_t newCounter);
@@ -28,6 +34,7 @@ void writeMeasurementInEEPROM(struct measurement *measureDatastore);
 
 void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore);
 
+// Schedule opeartions
 uint16_t readEEPROMEndOfScheduleCounter();
 
 void writeEEPROMEndOfScheduleCounter(uint16_t newCounter);

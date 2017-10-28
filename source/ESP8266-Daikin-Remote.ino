@@ -115,6 +115,9 @@ void setup() {
   // Disconnect from the Wifi
   disconnectWifi();
 
+  // write what is necessary in the EEPROM
+  writeEEPROM();
+
   /* -----------------------------------------------
       CYCLE END
       Close the debug
