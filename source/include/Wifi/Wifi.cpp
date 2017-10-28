@@ -6,7 +6,7 @@
 
 #include "../CustomConstants.h"
 #include "../RTCMem_Lib.h"
-#include "../EEPROM_Data_Lib.h"
+#include "../ExPROM/ExPROM.h"
 #include "../CycleManager/CycleManager.h"
 #include "../Debug_Lib.h"
 #include "../RTCMem_Lib.h"

@@ -10,7 +10,7 @@
 #include "include/Measurement.h"
 #include "include/SHT31_Lib.h"
 #include "include/RTCMem_Lib.h"
-#include "include/EEPROM_Data_Lib.h"
+#include "include/ExPROM/ExPROM.h"
 #include "include/Battery_Lib.h"
 #include "include/Wifi/Wifi.h"
 #include "include/CycleManager/CycleManager.h"
