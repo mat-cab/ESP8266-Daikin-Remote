@@ -11,6 +11,7 @@
 CycleManager_RTCData * cycleManagerRTCData;
 float *cycleFactor;
 time_t *timestamp;
+time_t *lastUpdateTimestamp;
 uint16_t *iteration;
 uint16_t *lastIteration;
 uint16_t *cycleTime;
@@ -35,6 +36,8 @@ void initializeCycleManager() {
   cycleFactor = cycleManagerRTCData->getCycleFactor();
   // Read the last iteration from RTC memory
   lastIteration = cycleManagerRTCData->getLastIteration();
+  // Read the last updateTime timestamp
+  lastUpdateTimestamp = cycleManagerRTCData->getLastUpdateTimestamp();
 }
 
 void resetCycleManager() {
@@ -164,22 +167,31 @@ void updateTime(String timestampString) {
   // Set the new time
   setTime(newTime);
 
-  // Compute shift between two dates
-  int32_t shift =  newTime - lastTimestamp;
+  // Also send to debug
+  debug("Adjusted internal time!");
 
-  // Adjust cycle factor
-  updateCycleFactor(shift, (uint32_t) (lastTimestamp - *timestamp));
+  // if there is a bit of time between the two updates
+  if ((lastTimestamp - *lastUpdateTimestamp) > CYCLE_ADJUST_FACTOR_MIN_TIME) {
+    // Compute shift between two dates
+    int32_t shift =  newTime - lastTimestamp;
 
-  // Ouput the time shift  
-  debug("Shift was: "+String(shift)+" seconds"); 
+    // Adjust cycle factor wrt last time update
+    updateCycleFactor(shift, (uint32_t) (lastTimestamp - *lastUpdateTimestamp));
 
-  // Also output the adjusted cycleFactor
-  debug("Adjusted cycle factor to: "+String(*cycleFactor));
+    // Ouput the time shift  
+    debug("Shift was: "+String(shift)+" seconds"); 
+
+    // Also output the adjusted cycleFactor
+    debug("Adjusted cycle factor to: "+String(*cycleFactor));
+  }
 
   // Set the time in the RTC memory
   // Note: the cycle time is the time at the beginning of the iteration
   // Therefore it is necessary to remove the millis since the start of the iteration
   *timestamp = newTime - (currentMillis/(uint32_t)1000);
+
+  // also set the lastUpdateTimestamp
+  *lastUpdateTimestamp = *timestamp;
 
   // reset the last iteration to 0
   *lastIteration = 0;

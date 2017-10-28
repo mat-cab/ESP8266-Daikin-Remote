@@ -10,6 +10,8 @@ class CycleManager_RTCData {
   float cycle_factor;
   // 4 bytes: Timestamp of the start of cycle
   time_t timestamp; 
+  // 4 bytes: Timestamp of the last time update
+  time_t lastUpdateTimestamp;
   // 2 bytes: Iteration in the cycle
   uint16_t iteration;
   // 2 bytes: Cycle time
@@ -21,6 +23,7 @@ class CycleManager_RTCData {
   // Getters
   float * getCycleFactor();
   time_t * getTimestamp();
+  time_t * getLastUpdateTimestamp();
   uint16_t * getIteration();
   uint16_t * getCycleTime();
   uint16_t * getLastIteration();

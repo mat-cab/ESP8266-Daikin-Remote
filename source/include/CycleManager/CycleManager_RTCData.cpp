@@ -10,6 +10,10 @@ time_t * CycleManager_RTCData::getTimestamp() {
   return &(this->timestamp);
 }
 
+time_t * CycleManager_RTCData::getLastUpdateTimestamp() {
+  return &(this->lastUpdateTimestamp);
+}
+
 uint16_t * CycleManager_RTCData::getIteration() {
   return &(this->iteration);
 }
