@@ -67,14 +67,23 @@ void writeMeasurementInEEPROM(struct measurement *measureDatastore) {
   checkEEPROMHeader();
 
   // Write in the next available slot and increase counter
-  writeEEPROM( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + eeHeader->getMeasurementIndex() * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
+  writeEEPROM( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + (eeHeader->getMeasurementIndexStart() + eeHeader->getMeasurementIndex()) * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
 
   eeHeader->increaseMeasurementIndex();
 }
 
 void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore) {
+  checkEEPROMHeader();
+
   // read the data
-  readEEPROM( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + measurementIndex * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
+  readEEPROM( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + (eeHeader->getMeasurementIndexStart() + measurementIndex) * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
+}
+
+void deleteMeasurementsFromEEPROM( uint16_t total ) {
+  checkEEPROMHeader();
+
+  // Increase the start counter of the measurements (only the first will be deleted)
+  eeHeader->increaseMeasurementIndexStart( total ); 
 }
 
 /******************* 

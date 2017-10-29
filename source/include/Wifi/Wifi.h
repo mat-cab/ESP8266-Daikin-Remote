@@ -15,6 +15,8 @@
 #define IOT_SERVER "api.thingspeak.com"
 // Port of the IOT Server
 #define IOT_PORT 80
+// Maximum number of points to be sent to the server
+#define IOT_MAX_POINTS_PER_REQ  980
 
 // Constants for the schedule server
 // Data server of the schedule (use HTTPS)

@@ -34,6 +34,8 @@ void writeMeasurementInEEPROM(struct measurement *measureDatastore);
 
 void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore);
 
+void deleteMeasurementsFromEEPROM( uint16_t total );
+
 // Schedule opeartions
 uint16_t readEEPROMEndOfScheduleCounter();
 

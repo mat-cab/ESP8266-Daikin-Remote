@@ -81,15 +81,15 @@ void sendWifi() {
 
     // Read the EEPROM counter
     uint16_t EEPROMcounter = readEEPROMMeasurementCounter();
+    uint16_t totalMeasurements = EEPROMcounter < IOT_MAX_POINTS_PER_REQ ? EEPROMcounter : IOT_MAX_POINTS_PER_REQ;
 
     struct measurement recordedMeasure;
-
 
     // Compute the JSON string length (initial and final part of the string)
     uint32_t dataLength = jsonBuffer.length() + 3;
 
     // loop through all measurement
-    for (uint16_t i=0; i<EEPROMcounter; i++) {
+    for (uint16_t i=0; i<totalMeasurements; i++) {
       // Read a measurement from the EEPROM
       readMeasurementFromEEPROM(i, &recordedMeasure);
       // Add the length to the total length
@@ -97,7 +97,7 @@ void sendWifi() {
     }
 
     // Also add the , between the measures
-    dataLength += EEPROMcounter;
+    dataLength += totalMeasurements;
     
     // Output message
     debug("Sending the update request...");
@@ -118,7 +118,7 @@ void sendWifi() {
     client->println();
 
     // Loop through all the remaining entries
-    for (uint16_t i=0; i<EEPROMcounter; i++) {
+    for (uint16_t i=0; i<totalMeasurements; i++) {
       // Read a measurement from the EEPROM
       readMeasurementFromEEPROM(i, &recordedMeasure);
 
@@ -174,6 +174,8 @@ void sendWifi() {
 
     // Wait for the client response
     while( !client->available() ) {
+      // TODO: Implement a timeout for the request
+
       debug("Waiting for response...");
       
       delay(WIFI_WAIT);
@@ -208,6 +210,9 @@ void sendWifi() {
       debug("Error while sending the request");
     } else {
       debug("Request sucessfully sent!");
+
+      // Update the EEPROM
+      deleteMeasurementsFromEEPROM( totalMeasurements ); 
     }
   }
 }
