@@ -11,6 +11,9 @@ class EEPROM_Header {
   uint16_t measurementIndex;
 
   public:
+  // Constructor
+  EEPROM_Header();
+
   // Initializers
   void reset();
   void resetActionIndex();

@@ -66,13 +66,29 @@ void runScheduler() {
     return;
   }
 
+  bool readFromEEPROM = false;
+
   // Verify if the day has changed since the last execution
   if (lastDayOfExecution != weekday()) {
-    // if so, reset all actions executed
+    // Send a message to debug
+    debug("Resetting the execution flag on all actions");
+
+    // if so, read the schedule from the EEPROM
+    readScheduleFromEEPROM(&schedule);
+
+    // set the flag to already read
+    readFromEEPROM = true;  
+
+    // reset all actions executed
     schedule->resetAllExecuted();  
 
     // and save the day
     lastDayOfExecution = weekday();
+
+    // and write the schedule in EEPROM
+    writeScheduleInEEPROM(schedule);
+ 
+    debug("Flag reset");
   }
  
   // Verify if the first action is to be executed
@@ -80,9 +96,12 @@ void runScheduler() {
     // Do nothing for this cycle
     debug("First action is not to be executed");
   } else {
-    debug("Reading schedule from EEPROM..."); 
-    // read the whole schedule
-    readScheduleFromEEPROM(&schedule);
+    // Verify that we haven't read yet the schedule
+    if (!readFromEEPROM) {
+      debug("Reading schedule from EEPROM..."); 
+      // read the whole schedule
+      readScheduleFromEEPROM(&schedule);
+    }
 
     // print it
     printSchedule();

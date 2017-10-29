@@ -8,7 +8,7 @@
 // Wifi delay loop time
 #define WIFI_WAIT 1000
 // JSON Buffer size
-#define JSON_BUFFER_MAX_LENGTH 204
+#define JSON_BUFFER_MAX_LENGTH 1024
 
 // Constants for the IOT stream
 // Data server of the IOT Stream

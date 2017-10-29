@@ -79,6 +79,9 @@ void setup() {
 
     // reset the wifi
     resetWifi();
+
+    // Send an OFF command to warn that it was started!
+    sendIRStop(); 
   }
 
   // send the schedule to the debug

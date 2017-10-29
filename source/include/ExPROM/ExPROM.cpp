@@ -14,7 +14,7 @@
 // Verify that the size of the hader is less than the allowed space
 static_assert( sizeof(EEPROM_Header) <= EEPROM_HEADER_SIZE, "EEPROM Header is bigger than the allowed size");
 
-EEPROM_Header * eeHeader;
+EEPROM_Header * eeHeader = NULL;
 
 void resetEEPROM() {
   // read the header if necessary
@@ -32,15 +32,17 @@ void writeEEPROM() {
  * Header operations
  *********************/
 void readEEPROMHeader() {
-  readEEPROM(0, (byte*)&eeHeader, sizeof(EEPROM_Header));
+  readEEPROM(0, (byte*)eeHeader, sizeof(EEPROM_Header));
 }
 
 void writeEEPROMHeader() {
-  writeEEPROM(0, (byte*)&eeHeader, sizeof(EEPROM_Header));
+  writeEEPROM(0, (byte*)eeHeader, sizeof(EEPROM_Header));
 }
 
 void checkEEPROMHeader() {
   if (eeHeader == NULL) {
+    eeHeader = new EEPROM_Header();
+
     readEEPROMHeader();
   }
 }
@@ -65,7 +67,9 @@ void writeMeasurementInEEPROM(struct measurement *measureDatastore) {
   checkEEPROMHeader();
 
   // Write in the next available slot and increase counter
-  writeEEPROM( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + eeHeader->increaseMeasurementIndex() * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
+  writeEEPROM( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + eeHeader->getMeasurementIndex() * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
+
+  eeHeader->increaseMeasurementIndex();
 }
 
 void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore) {

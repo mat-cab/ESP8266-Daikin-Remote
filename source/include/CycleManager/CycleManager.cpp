@@ -192,11 +192,14 @@ void updateTime(String timestampString) {
 
   // also set the lastUpdateTimestamp
   *lastUpdateTimestamp = *timestamp;
+  
+  // save the number of cycles since the last cycle
+  uint16_t lastCycleIteration = getIterationsFromLastCycle();
 
   // reset the last iteration to 0
   *lastIteration = 0;
   // reset the iterations to 1 (to avoid having 0 iterations in a cycle)
-  *iteration = 0;
+  *iteration = lastCycleIteration;
 }
 
 uint16_t getCycleTime() {

@@ -1,5 +1,9 @@
 #include "EEPROM_Header.h"
 
+EEPROM_Header::EEPROM_Header() {
+  this->reset();
+}
+
 void EEPROM_Header::reset() {
   // Reset the indexes
   this->resetActionIndex();
@@ -35,5 +39,5 @@ uint16_t EEPROM_Header::increaseActionIndex(uint8_t increase) {
 }
 
 uint16_t EEPROM_Header::increaseMeasurementIndex() {
-  this->measurementIndex++;
+  return (this->measurementIndex++);
 }
