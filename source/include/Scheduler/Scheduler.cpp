@@ -27,17 +27,19 @@ void initializeScheduler() {
   debug("Scheduler initialization finished");
 }
 
-void resetScheduler() {
+void resetScheduler(bool hardReset) {
   debug("Resetting the scheduler");
 
-  // set the scheduler to empty
-  schedule = NULL;
+  if (hardReset) {
+    // set the scheduler to empty
+    schedule = NULL;
+  }
 
   // Connect to the wifi
   connectToWifi();
 
   // Receive the schedule
-  receiveWifi();
+  receiveWifi(&schedule);
 
   // sort the schedule
   sortSchedule();

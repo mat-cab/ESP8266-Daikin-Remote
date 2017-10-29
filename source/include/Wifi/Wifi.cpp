@@ -249,7 +249,7 @@ void updateRTCTimestamp(struct measurement *measureDatastore) {
 /***************************
  * scheduler receive part
  ***************************/
-void receiveWifi() {
+void receiveWifi(Action ** schedule) {
   char header[100];
   bool retry = true;
   bool endOfHeader;
@@ -266,8 +266,6 @@ void receiveWifi() {
     client->println("Host: "+String(GIST_SERVER));
     client->println("Connection: close");
     client->println();
-
-    // TODO: Clear the schedule only when it is sure we will receive the new one
 
     // Here is the response
     while (client->connected()) {
@@ -286,6 +284,10 @@ void receiveWifi() {
               updateTime( str.substring(6) );
           } else if (str.length() == 1) {
               endOfHeader = true;
+              
+              // Also reset the schedule to empty, before adding anything
+              *schedule = NULL;
+
               debug("Here comes the schedule:");
           }
         } else {

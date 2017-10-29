@@ -4,6 +4,7 @@
 #include "Arduino.h"
 
 #include "../Measurement.h"
+#include "../Scheduler/Action.h"
 
 // Wifi delay loop time
 #define WIFI_WAIT 1000
@@ -42,5 +43,5 @@ uint16_t jsonGetEntryLength(struct measurement *measureDatastore);
 
 void updateRTCTimestamp(struct measurement *measureDatastore);
 
-void receiveWifi();
+void receiveWifi(Action **schedule);
 #endif
