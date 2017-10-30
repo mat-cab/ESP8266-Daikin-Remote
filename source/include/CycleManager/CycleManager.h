@@ -19,7 +19,7 @@ void updateCycleManager();
 
 uint32_t getNextCycle();
 
-void updateCycleFactor(uint32_t timeShift, uint32_t timeSpan);
+void updateCycleFactor(int32_t timeShift, uint32_t timeSpan);
 
 void updateCycleTime(uint32_t newCycleTime);
 

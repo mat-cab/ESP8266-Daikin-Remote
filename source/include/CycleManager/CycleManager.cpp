@@ -78,9 +78,9 @@ uint32_t getNextCycle() {
   return waitMicros;
 }
 
-void updateCycleFactor(uint32_t timeShift, uint32_t timeSpan) {
+void updateCycleFactor(int32_t timeShift, uint32_t timeSpan) {
   // Do not update if there was a reset of the cycleManager  
-  if (!reset) {
+  if (!reset) {  
     // Update wrt last update
     *cycleFactor -= (float)timeShift / (float)(timeSpan);
   }
@@ -179,7 +179,7 @@ void updateTime(String timestampString) {
     updateCycleFactor(shift, (uint32_t) (lastTimestamp - *lastUpdateTimestamp));
 
     // Ouput the time shift  
-    debug("Shift was: "+String(shift)+" seconds"); 
+    debug("Shift was: "+String(shift)+" seconds on a span of "+String((lastTimestamp - *lastUpdateTimestamp))+" s"); 
 
     // Also output the adjusted cycleFactor
     debug("Adjusted cycle factor to: "+String(*cycleFactor));
