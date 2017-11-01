@@ -37,7 +37,7 @@ void sendWifi();
 
 void jsonUpdate(String *jsonBuf);
 
-String jsonCreateEntry(struct measurement *measureDatastore);
+String jsonCreateEntry(struct measurement *measureDatastore, time_t timestamp);
 
 uint16_t jsonGetEntryLength(struct measurement *measureDatastore);
 

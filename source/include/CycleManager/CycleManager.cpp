@@ -62,17 +62,13 @@ void updateCycleManager() {
   *lastIteration = *iteration;
 
   // Compute the next iterations (in case of cycle overflow)
-  *iteration = *iteration + (1 + millis() / (*cycleTime * 1000));
-
-  if ((*iteration - *lastIteration) > 1) {
-    debug("Skipped one cycle : from "+String(*lastIteration)+" to "+String(*iteration));
-  }
+  *iteration = *iteration + (1 + (uint32_t)millis() / (uint32_t)(*cycleTime * 1000));
 }
 
 uint32_t getNextCycle() {
   // TODO: Allow to wake up at the next action (and not necessarly on a cycle)
 
-  uint32_t waitMillis = *cycleTime * 1000 * (1 + millis() / (*cycleTime * 1000));
+  uint32_t waitMillis = *cycleTime * 1000 * getIterationsFromLastCycle();
   uint32_t waitMicros = (waitMillis*1000-micros())*(*cycleFactor);
 
   return waitMicros;
@@ -108,7 +104,7 @@ void updateCycleTime(uint32_t newCycleTime) {
   *timestamp = cycleStart;
 } 
 
-void updateTime(String timestampString) {
+int32_t updateTime(String timestampString) {
   time_t lastTimestamp = now();
   uint32_t currentMillis = millis();
   
@@ -170,11 +166,11 @@ void updateTime(String timestampString) {
   // Also send to debug
   debug("Adjusted internal time!");
 
+  // Compute for the time shift between the two dates
+  int32_t shift =  newTime - lastTimestamp;
+
   // if there is a bit of time between the two updates
   if ((lastTimestamp - *lastUpdateTimestamp) > CYCLE_ADJUST_FACTOR_MIN_TIME) {
-    // Compute shift between two dates
-    int32_t shift =  newTime - lastTimestamp;
-
     // Adjust cycle factor wrt last time update
     updateCycleFactor(shift, (uint32_t) (lastTimestamp - *lastUpdateTimestamp));
 
@@ -198,8 +194,11 @@ void updateTime(String timestampString) {
 
   // reset the last iteration to 0
   *lastIteration = 0;
-  // reset the iterations to 1 (to avoid having 0 iterations in a cycle)
-  *iteration = lastCycleIteration;
+  // reset the iterations to 0
+  *iteration = 0;
+
+  // return the shift for other timers adjustement
+  return shift;
 }
 
 uint16_t getCycleTime() {

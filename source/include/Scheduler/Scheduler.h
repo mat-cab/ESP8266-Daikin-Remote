@@ -12,7 +12,7 @@
 
 void initializeScheduler();
 
-void resetScheduler(bool hardReset = false);
+bool resetScheduler(bool hardReset = false);
 
 void addAction(ActionType actionType, DaysMask dMask, byte hour, byte minute, byte second);
 

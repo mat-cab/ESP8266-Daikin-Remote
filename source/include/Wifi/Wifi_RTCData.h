@@ -17,5 +17,6 @@ class Wifi_RTCData {
 
   // Elaborate setters
   void increaseTimestamp(uint16_t timeIncrease);
+  void increaseTimestamp(int32_t timeDiff);
 };
 #endif

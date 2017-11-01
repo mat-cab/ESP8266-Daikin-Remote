@@ -75,9 +75,12 @@ void setup() {
     resetEEPROM();
 
     // reset the scheduler
-    // Perform an hard reset to be sure to delete the persistent values
-    resetScheduler(true);
-
+    // and make sure the reset is ok
+    bool correctSchedulerReset;
+    do {
+      correctSchedulerReset = resetScheduler(true);
+    } while (!correctSchedulerReset);
+    
     // reset the wifi
     resetWifi();
 

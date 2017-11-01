@@ -13,9 +13,12 @@
 #define EEPROM_HEADER_SIZE 32  
 // Scheduler page size in EEPROM (in byte)
 #define SCHEDULER_PAGE_SIZE 512
-// Measurement page size in EEPROM (in byte)
-#define MEASUREMENT_PAGE_SIZE 131072 
-// Half of the EEPROM remains empty...
+// The rest of the EEPROM is dedicated to the measurement storage
+// this is the total size of the EEPROM
+#define EEPROM_TOTAL_SIZE 262144
+
+// Maximum Measurement index in EEPROM
+#define EEPROM_MAX_MEASUREMENT_INDEX (EEPROM_TOTAL_SIZE - EEPROM_HEADER_SIZE - SCHEDULER_PAGE_SIZE) / sizeof(measurement)
 
 void resetEEPROM();
 void writeEEPROM();
@@ -27,8 +30,6 @@ void checkEEPROMHeader();
 
 // Measurement operations
 uint16_t readEEPROMMeasurementCounter();
-
-void writeEEPROMMeasurementCounter(uint16_t newCounter);
 
 void writeMeasurementInEEPROM(struct measurement *measureDatastore);
 

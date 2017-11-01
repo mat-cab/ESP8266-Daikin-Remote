@@ -27,7 +27,7 @@ void initializeScheduler() {
   debug("Scheduler initialization finished");
 }
 
-void resetScheduler(bool hardReset) {
+bool resetScheduler(bool hardReset) {
   debug("Resetting the scheduler");
 
   if (hardReset) {
@@ -54,6 +54,8 @@ void resetScheduler(bool hardReset) {
   saveSchedulerInRTCMem();
 
   debug("Scheduler reset finished");
+
+  return isSchedulerActive();
 }
 
 void clearScheduler() {

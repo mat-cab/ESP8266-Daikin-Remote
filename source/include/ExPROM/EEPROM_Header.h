@@ -20,21 +20,20 @@ class EEPROM_Header {
   void reset();
   void resetActionIndex();
   void resetMeasurementIndex();
+  void resetMeasurementIndexEnd();
 
   // Getters
   uint16_t getActionIndex() const;
   uint16_t getMeasurementIndexStart() const;
-
-  // Elaborate getters
-  uint16_t getMeasurementIndex() const;
+  uint16_t getMeasurementIndexEnd() const;
 
   // Setters
   void setActionIndex(uint16_t newIndex);
-  void setMeasurementIndex(uint16_t newIndex);
+  void resetMeasurementIndexStart(uint16_t newStart);
 
   // Elaborate setters
   uint16_t increaseActionIndex(uint8_t increase);
-  uint16_t increaseMeasurementIndex();
+  uint16_t increaseMeasurementIndexEnd();
   uint16_t increaseMeasurementIndexStart(uint16_t increase);
 };
 

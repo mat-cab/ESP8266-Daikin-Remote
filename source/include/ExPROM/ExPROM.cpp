@@ -9,8 +9,6 @@
 
 #include "ExPROM.h"
 
-// TODO: Introduce a new counter for the measurements (to have a start and an end)
-
 // Verify that the size of the hader is less than the allowed space
 static_assert( sizeof(EEPROM_Header) <= EEPROM_HEADER_SIZE, "EEPROM Header is bigger than the allowed size");
 
@@ -54,36 +52,52 @@ uint16_t readEEPROMMeasurementCounter() {
   checkEEPROMHeader();
 
   // Return the value
-  return eeHeader->getMeasurementIndex();
-}
-
-void writeEEPROMMeasurementCounter(uint16_t newCounter) {
-  checkEEPROMHeader();
-
-  eeHeader->setMeasurementIndex(newCounter);
+  if (eeHeader->getMeasurementIndexEnd() >= eeHeader->getMeasurementIndexStart()) {
+    return (eeHeader->getMeasurementIndexEnd() - eeHeader->getMeasurementIndexStart());
+  } else {
+    // case of write over
+    return (eeHeader->getMeasurementIndexEnd() + (EEPROM_MAX_MEASUREMENT_INDEX - eeHeader->getMeasurementIndexStart()));
+  }
 }
 
 void writeMeasurementInEEPROM(struct measurement *measureDatastore) {
   checkEEPROMHeader();
 
   // Write in the next available slot and increase counter
-  writeEEPROM( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + (eeHeader->getMeasurementIndexStart() + eeHeader->getMeasurementIndex()) * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
+  writeEEPROM( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + eeHeader->getMeasurementIndexEnd() * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
 
-  eeHeader->increaseMeasurementIndex();
+  // Verify if the page is full
+  if (eeHeader->increaseMeasurementIndexEnd() >= EEPROM_MAX_MEASUREMENT_INDEX) {
+    // If it is, loop back to the start of the page
+    eeHeader->resetMeasurementIndexEnd();
+  }
 }
 
 void readMeasurementFromEEPROM( uint16_t measurementIndex, struct measurement *measureDatastore) {
   checkEEPROMHeader();
 
   // read the data
-  readEEPROM( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + (eeHeader->getMeasurementIndexStart() + measurementIndex) * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
+  if (eeHeader->getMeasurementIndexEnd() >= eeHeader->getMeasurementIndexStart() || (eeHeader->getMeasurementIndexStart() + measurementIndex) < EEPROM_MAX_MEASUREMENT_INDEX ) {
+    readEEPROM( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + (eeHeader->getMeasurementIndexStart() + measurementIndex) * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
+  } else {
+    uint16_t index = measurementIndex - (EEPROM_MAX_MEASUREMENT_INDEX - eeHeader->getMeasurementIndexStart());
+
+    readEEPROM(EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + index * sizeof(measurement), (byte*)measureDatastore, sizeof(measurement));
+  }
 }
 
 void deleteMeasurementsFromEEPROM( uint16_t total ) {
   checkEEPROMHeader();
+  
+  uint16_t lastStart = eeHeader->getMeasurementIndexStart();
+  uint16_t newStart = eeHeader->increaseMeasurementIndexStart( total ); 
 
   // Increase the start counter of the measurements (only the first will be deleted)
-  eeHeader->increaseMeasurementIndexStart( total ); 
+  if ( EEPROM_HEADER_SIZE + SCHEDULER_PAGE_SIZE + newStart * sizeof(measurement) >= EEPROM_TOTAL_SIZE ) {
+    uint16_t rollOver = total - ((EEPROM_TOTAL_SIZE - EEPROM_HEADER_SIZE - SCHEDULER_PAGE_SIZE) / sizeof(measurement) - lastStart);
+
+    eeHeader->resetMeasurementIndexStart(rollOver);
+  }
 }
 
 /******************* 

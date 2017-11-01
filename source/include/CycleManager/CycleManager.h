@@ -6,7 +6,7 @@
 // Constants for the cycles
 // Cycle time in s
 #define CYCLE_TIME 30
-#define CYCLE_FACTOR 1.02
+#define CYCLE_FACTOR 1.00
 
 // Minimum time in s between each adjust cycle factor
 #define CYCLE_ADJUST_FACTOR_MIN_TIME  60
@@ -23,7 +23,7 @@ void updateCycleFactor(int32_t timeShift, uint32_t timeSpan);
 
 void updateCycleTime(uint32_t newCycleTime);
 
-void updateTime(String timestamp); 
+int32_t updateTime(String timestamp); 
 
 uint16_t getCycleTime();
 

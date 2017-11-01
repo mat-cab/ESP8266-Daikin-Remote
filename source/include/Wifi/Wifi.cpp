@@ -88,6 +88,9 @@ void sendWifi() {
     // Compute the JSON string length (initial and final part of the string)
     uint32_t dataLength = jsonBuffer.length() + 3;
 
+    // Initial value of the RTC Timestamp
+    time_t RTCTimestamp = wifiRTCData->getTimestamp();
+
     // loop through all measurement
     for (uint16_t i=0; i<totalMeasurements; i++) {
       // Read a measurement from the EEPROM
@@ -101,7 +104,7 @@ void sendWifi() {
     
     // Output message
     debug("Sending the update request...");
-    debug("JSON data is following (length is "+String(dataLength)+" bytes for "+(EEPROMcounter+1)+" records)");
+    debug("JSON data is following (length is "+String(dataLength)+" bytes for "+totalMeasurements+" records)");
 
     delay(WIFI_WAIT);
 
@@ -122,13 +125,13 @@ void sendWifi() {
       // Read a measurement from the EEPROM
       readMeasurementFromEEPROM(i, &recordedMeasure);
 
-      // First increase the timestamp in the RTC memory (delta is wrt last measure)
-      updateRTCTimestamp(&recordedMeasure);
+      // First increase the timestamp from the RTC memory (delta is wrt last measure)
+      RTCTimestamp += recordedMeasure.deltaWithLastMeasurement;
 
       // Add the new entry to the JSON string
-      nextEntry = jsonCreateEntry(&recordedMeasure);
+      nextEntry = jsonCreateEntry(&recordedMeasure, RTCTimestamp);
 
-      if ( i != EEPROMcounter - 1 ) {
+      if ( i != totalMeasurements - 1 ) {
         nextEntry += ",";
       }
 
@@ -183,6 +186,8 @@ void sendWifi() {
 
     debug("Response received!");
 
+    int32_t timeShift = 0;
+
     // Output its response
     while (client->connected()) {
       if ( client->available() )
@@ -197,7 +202,7 @@ void sendWifi() {
             debug("Error reply was: "+str);
           }
         } else if (str.startsWith("Date: ")) {
-          updateTime( str.substring(6) );
+          timeShift = updateTime( str.substring(6) );
         } else if (retry) {
           // There was an error, print the output message
           debug(str);
@@ -211,13 +216,16 @@ void sendWifi() {
     } else {
       debug("Request sucessfully sent!");
 
+      // Update the RTC timestamp
+      wifiRTCData->setTimestamp(RTCTimestamp + timeShift);
+
       // Update the EEPROM
       deleteMeasurementsFromEEPROM( totalMeasurements ); 
     }
   }
 }
 
-String jsonCreateEntry(struct measurement *measureDatastore) {
+String jsonCreateEntry(struct measurement *measureDatastore, time_t timestamp) {
   char sTemp[6], sHumidity[6], sVoltage[7], sFactor[8];
 
   String buf;
@@ -228,10 +236,8 @@ String jsonCreateEntry(struct measurement *measureDatastore) {
   dtostrf(getHumidity(measureDatastore), 5, 2, sHumidity);
   dtostrf(getVoltage(measureDatastore), 5, 3, sVoltage);  
 
-  time_t startTimestamp = wifiRTCData->getTimestamp();
-
   char startTimestampChar[22];
-  sprintf(startTimestampChar, "%04u-%02u-%02u %02u:%02u:%02u ", year(startTimestamp), month(startTimestamp), day(startTimestamp), hour(startTimestamp), minute(startTimestamp), second(startTimestamp));
+  sprintf(startTimestampChar, "%04u-%02u-%02u %02u:%02u:%02u ", year(timestamp), month(timestamp), day(timestamp), hour(timestamp), minute(timestamp), second(timestamp));
 
   buf = "{\"created_at\":\""+String(startTimestampChar)+String(TIMEZONE)+"\",\"field1\":"+String(sTemp)+",\"field2\":"+String(sHumidity)+",\"field3\":"+String(sVoltage)+"}";
   
@@ -239,7 +245,8 @@ String jsonCreateEntry(struct measurement *measureDatastore) {
 }
 
 uint16_t jsonGetEntryLength(struct measurement *measureDatastore) {
-  return jsonCreateEntry(measureDatastore).length();
+  // Use the RTC timestamp as timestamp (this is just to get the length)
+  return jsonCreateEntry(measureDatastore, wifiRTCData->getTimestamp()).length();
 }
 
 void updateRTCTimestamp(struct measurement *measureDatastore) {
@@ -281,7 +288,7 @@ void receiveWifi(Action ** schedule) {
               debug("Error reply was: "+str);
             }
           } else if (str.startsWith("Date: ")) {
-              updateTime( str.substring(6) );
+              wifiRTCData->increaseTimestamp(updateTime( str.substring(6) ));
           } else if (str.length() == 1) {
               endOfHeader = true;
               
