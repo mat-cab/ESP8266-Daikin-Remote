@@ -17,7 +17,7 @@
 // Port of the IOT Server
 #define IOT_PORT 80
 // Maximum number of points to be sent to the server
-#define IOT_MAX_POINTS_PER_REQ  980
+#define IOT_MAX_POINTS_PER_REQ  960
 
 // Constants for the schedule server
 // Data server of the schedule (use HTTPS)

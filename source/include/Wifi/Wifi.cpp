@@ -108,7 +108,7 @@ void sendWifi() {
 
     delay(WIFI_WAIT);
 
-    uint16_t writtenData = 0, totalWrittenData = 0, currentDataLength = 0;
+    uint32_t writtenData = 0, totalWrittenData = 0, currentDataLength = 0;
 
     // Send the beginning of the request
     sprintf(header, "POST /channels/%s/bulk_update.json HTTP/1.1", IOT_CHANNEL_ID);
