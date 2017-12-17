@@ -67,6 +67,8 @@ void readEEPROM(uint16_t eeaddress, byte* dataPointer, uint8_t dataLength) {
  
   Wire.requestFrom((uint8_t)EEPROM_ADDR, dataLength);
 
+  delay(EEPROM_DELAY);
+
   returnCode = Wire.available();
 
   if (returnCode != dataLength) {

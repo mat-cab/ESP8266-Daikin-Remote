@@ -14,8 +14,8 @@
 // Scheduler page size in EEPROM (in byte)
 #define SCHEDULER_PAGE_SIZE 512
 // The rest of the EEPROM is dedicated to the measurement storage
-// this is the total size of the EEPROM
-#define EEPROM_TOTAL_SIZE 262144
+// this is the total size of the EEPROM in bytes
+#define EEPROM_TOTAL_SIZE 32768
 
 // Maximum Measurement index in EEPROM
 #define EEPROM_MAX_MEASUREMENT_INDEX (EEPROM_TOTAL_SIZE - EEPROM_HEADER_SIZE - SCHEDULER_PAGE_SIZE) / sizeof(measurement)
