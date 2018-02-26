@@ -5,6 +5,6 @@ ROOT_FOLDER := $(shell echo $(CURDIR) | sed "s:\(.*ESP8266-Daikin-Remote/\).*:\1
 SKETCH := $(ROOT_FOLDER)/source/ESP8266-Daikin-Remote.ino
 
 # Add the user libraries as additional lib
-ADDITIONAL_LIBS := $(ROOT_FOLDER)/libraries/
+CUSTOM_LIBS := $(ROOT_FOLDER)/libraries/
 
 include $(ROOT_FOLDER)/libraries/makeEspArduino/makeEspArduino.mk
