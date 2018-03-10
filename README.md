@@ -25,3 +25,9 @@ https://github.com/plerup/makeEspArduino
 
 It is also dependent on the IRremoteESP8266 library available here:  
 https://github.com/markszabo/IRremoteESP8266
+
+# Issues
+In case the program does not start, verify the following points:
+  * Power supply (as always for ESP8266 projects)
+  * Flash mode used to upload the program:
+    With the ESP-12F, the standard flash mode for the generic chip is set to qio. Change this value to dio in your esp8266 board.txt definition in case this is not working.
