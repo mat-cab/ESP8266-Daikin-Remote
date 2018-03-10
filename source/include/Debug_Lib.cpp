@@ -5,7 +5,7 @@
 void initializeDebug() {
 #ifdef DEBUG
   // Setup serial
-  Serial.begin(115200);
+  Serial.begin(DEBUG_SPEED);
   Serial.println();
   Serial.println("ESP8266 starting - Time is "+String(weekday())+" "+String(day())+"/"+String(month())+"/"+String(year())+" "+String(hour())+":"+String(minute())+":"+String(second()));
 #endif

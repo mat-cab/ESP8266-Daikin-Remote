@@ -4,6 +4,7 @@
 // Used for debug purposes
 // Comment for production
 //#define DEBUG
+#define DEBUG_SPEED 115200
 
 #include "Arduino.h"
 #include "Measurement.h"
