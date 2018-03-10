@@ -11,6 +11,11 @@
 // JSON Buffer size
 #define JSON_BUFFER_MAX_LENGTH 1024
 
+// Allowed retries for the server connections
+#define WIFI_SERVER_RETRIES 3
+// Allowed retries for the requests
+#define WIFI_REQUEST_RETRIES 10
+
 // Constants for the IOT stream
 // Data server of the IOT Stream
 #define IOT_SERVER "api.thingspeak.com"
@@ -43,5 +48,5 @@ uint16_t jsonGetEntryLength(struct measurement *measureDatastore);
 
 void updateRTCTimestamp(struct measurement *measureDatastore);
 
-void receiveWifi(Action **schedule);
+bool receiveWifi(Action **schedule);
 #endif

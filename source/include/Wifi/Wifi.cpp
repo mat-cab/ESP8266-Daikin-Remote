@@ -256,61 +256,91 @@ void updateRTCTimestamp(struct measurement *measureDatastore) {
 /***************************
  * scheduler receive part
  ***************************/
-void receiveWifi(Action ** schedule) {
+bool receiveWifi(Action ** schedule) {
   char header[100];
-  bool retry = true;
+  uint8_t serverRetries = WIFI_SERVER_RETRIES, pageRetries = WIFI_REQUEST_RETRIES;
+  bool connectionOK;
+  bool pageRetry;
   bool endOfHeader;
 
   client = new WiFiClientSecure();
 
-  while( client->connect(GIST_SERVER, GIST_PORT) && retry ) {
-    endOfHeader = false;
+  while (serverRetries-->0) {
+    connectionOK = client->connect(GIST_SERVER, GIST_PORT);
 
-    debug("Connected to schedule server");
-
-    sprintf(header, "GET %s HTTP/1.1", SCHEDULE_URL);
-    client->println(header); 
-    client->println("Host: "+String(GIST_SERVER));
-    client->println("Connection: close");
-    client->println();
-
-    // Here is the response
-    while (client->connected()) {
-      if ( client->available() ) {
-        String str = client->readStringUntil('\n');
-        
-        if (endOfHeader == false) {
-          if (str.startsWith("HTTP/1.1")) {
-            // Do retry if return code is different from 200, which means OK
-            retry = (str.substring(9,12) != "200");
-
-            if (retry) {
-              debug("Error reply was: "+str);
-            }
-          } else if (str.startsWith("Date: ")) {
-              wifiRTCData->increaseTimestamp(updateTime( str.substring(6) ));
-          } else if (str.length() == 1) {
-              endOfHeader = true;
-              
-              // Also reset the schedule to empty, before adding anything
-              *schedule = NULL;
-
-              debug("Here comes the schedule:");
-          }
-        } else {
-          // We are in the schedule part!
-          parseNewAction(str);
-        }
-      }     
-    }
-    
-    if ( retry ) {
-      // There was an error
-      debug("Error while receiving the schedule");
+    if ( !connectionOK ) {
+      debug("Connection error with the schedule server");
     } else {
-      debug("Schedule sucessfully received!");
+      pageRetry = true;
+
+      while( pageRetry && pageRetries-->0 ) {
+        endOfHeader = false;
+
+        debug("Connected to schedule server");
+
+        sprintf(header, "GET %s HTTP/1.1", SCHEDULE_URL);
+        client->println(header); 
+        client->println("Host: "+String(GIST_SERVER));
+        client->println("Connection: close");
+        client->println();
+
+        // Here is the response
+        while (client->connected()) {
+          if ( client->available() ) {
+            String str = client->readStringUntil('\n');
+            
+            if (endOfHeader == false) {
+              if (str.startsWith("HTTP/1.1")) {
+                // Do retry if return code is different from 200, which means OK
+                pageRetry = (str.substring(9,12) != "200");
+
+                if (pageRetry) {
+                  debug("Error reply was: "+str);
+                }
+              } else if (str.startsWith("Date: ")) {
+                  wifiRTCData->increaseTimestamp(updateTime( str.substring(6) ));
+              } else if (str.length() == 1) {
+                  endOfHeader = true;
+                  
+                  // Also reset the schedule to empty, before adding anything
+                  *schedule = NULL;
+
+                  debug("Here comes the schedule:");
+              }
+            } else {
+              // We are in the schedule part!
+              parseNewAction(str);
+            }
+          }     
+        }
+        
+        if ( pageRetry ) {
+          // There was an error
+          debug("Error while receiving the schedule");
+        } else {
+          debug("Schedule sucessfully received!");
+          // Do not reconnect to server
+          serverRetries = 0;
+        }
+      }
+    }
+
+    // do not reconnect if all page retries are done
+    if (pageRetries == 0) {
+      serverRetries = 0;
     }
   }
 
-  debug("Schedule updated !");
+  if (connectionOK && pageRetries > 0) {
+    debug("Schedule updated !");
+    return true;
+  } else {
+    if (!connectionOK) {
+      debug("Could not reach schedule server");
+    } else if( pageRetries == 0 ) {
+      debug("Could not get schedule page");
+      debug("Check the address of the schedule page ?");
+    }
+    return false;
+  }
 }

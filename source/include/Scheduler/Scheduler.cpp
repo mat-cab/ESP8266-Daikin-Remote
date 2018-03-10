@@ -38,8 +38,18 @@ bool resetScheduler(bool hardReset) {
   // Connect to the wifi
   connectToWifi();
 
-  // Receive the schedule
-  receiveWifi(&schedule);
+  // Try to receive the schedule
+  if (!receiveWifi(&schedule) && hardReset) {
+    // If asked for a hard reset (initial reset only), but impossible to reach the schedule server, then go to sleep
+    debug("Could not update the schedule after the scheduler hard reset!");
+    debug("Sleeping for "+String(SCHEDULER_RESET_ERROR_SLEEP)+" seconds");
+
+    // close the debug to make sure the messages are sent
+    endDebug();
+
+    // go to sleep
+    ESP.deepSleep(SCHEDULER_RESET_ERROR_SLEEP*1000000);
+  }
 
   // sort the schedule
   sortSchedule();
