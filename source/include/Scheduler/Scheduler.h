@@ -6,8 +6,8 @@
 #ifndef SCHEDULER_LIB_H_
 #define SCHEDULER_LIB_H_
 
-// Sleep time in case the schedule server is not available
-#define SCHEDULER_RESET_ERROR_SLEEP 3600
+// Sleep time in case the schedule server is not available in ms
+#define SCHEDULER_RESET_ERROR_SLEEP 3600000
 
 #include "Arduino.h"
 

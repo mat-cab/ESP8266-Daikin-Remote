@@ -28,6 +28,8 @@ void initializeScheduler() {
 }
 
 bool resetScheduler(bool hardReset) {
+  bool error = false;
+
   debug("Resetting the scheduler");
 
   if (hardReset) {
@@ -35,35 +37,47 @@ bool resetScheduler(bool hardReset) {
     schedule = NULL;
   }
 
-  // Connect to the wifi
-  connectToWifi();
+  // Try to connect to the wifi
+  if (!connectToWifi()) {
+    // in case no connection 
+    debug("Could not connect to wifi during scheduler hard reset");
+    // save error
+    error = true;
+  }
 
   // Try to receive the schedule
-  if (!receiveWifi(&schedule) && hardReset) {
+  if (!error && !receiveWifi(&schedule)) {
     // If asked for a hard reset (initial reset only), but impossible to reach the schedule server, then go to sleep
     debug("Could not update the schedule after the scheduler hard reset!");
-    debug("Sleeping for "+String(SCHEDULER_RESET_ERROR_SLEEP)+" seconds");
+    // save error
+    error = true;
+  }
+
+  // If there was an error during a hard reset
+  if (error && hardReset) {
+    // Warn about the following deepSleep
+    debug("Sleeping for "+String(SCHEDULER_RESET_ERROR_SLEEP)+" ms, hoping connection will be OK then.");
 
     // close the debug to make sure the messages are sent
     endDebug();
 
     // go to sleep
-    ESP.deepSleep(SCHEDULER_RESET_ERROR_SLEEP*1000000);
+    ESP.deepSleep(SCHEDULER_RESET_ERROR_SLEEP*1000);
+  } else if ( !hardReset ) {
+    // sort the schedule
+    sortSchedule();
+
+    // write in EEPROM
+    writeScheduleInEEPROM(schedule); 
+
+    // Also update the last day of execution
+    lastDayOfExecution = weekday();
+
+    // save in RTC Memory
+    saveSchedulerInRTCMem();
+
+    debug("Scheduler reset finished");
   }
-
-  // sort the schedule
-  sortSchedule();
-
-  // write in EEPROM
-  writeScheduleInEEPROM(schedule); 
-
-  // Also update the last day of execution
-  lastDayOfExecution = weekday();
-
-  // save in RTC Memory
-  saveSchedulerInRTCMem();
-
-  debug("Scheduler reset finished");
 
   return isSchedulerActive();
 }

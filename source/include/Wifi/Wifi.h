@@ -6,11 +6,15 @@
 #include "../Measurement.h"
 #include "../Scheduler/Action.h"
 
-// Wifi delay loop time
+// Wifi delay loop time in ms
 #define WIFI_WAIT 1000
 // JSON Buffer size
 #define JSON_BUFFER_MAX_LENGTH 1024
 
+// Allowed retries for the WIFI connection
+#define WIFI_RETRIES 3
+// Allowed timeout for each WIFI connection in ms
+#define WIFI_TIMEOUT 30000
 // Allowed retries for the server connections
 #define WIFI_SERVER_RETRIES 3
 // Allowed retries for the requests
@@ -34,7 +38,7 @@ void initializeWifi();
 
 void resetWifi();
 
-void connectToWifi();
+bool connectToWifi();
 
 void disconnectWifi();
  

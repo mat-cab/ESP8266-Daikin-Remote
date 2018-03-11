@@ -31,29 +31,55 @@ void resetWifi() {
   debug("Reset done");
 }
 
-void connectToWifi() {
+bool connectToWifi() {
   // Verify if already connected
   if (WiFi.status() != WL_CONNECTED) {
     // Activate Wifi
     WiFi.mode(WIFI_STA);
 
-    // Connect to Wifi
-    WiFi.begin(WIFI_SSID, WIFI_PASSWD);
+    // set initial number of retries
+    uint8_t retries = WIFI_RETRIES;
 
-    // Output message
-    debug("Trying to connect to Wifi...");
+    while (retries-->0) {
+      int32_t timeout = WIFI_TIMEOUT;
 
-    // Wait until connected
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(WIFI_WAIT);
-      debug("Waiting for connection...");
+      // Connect to Wifi
+      WiFi.begin(WIFI_SSID, WIFI_PASSWD);
+
+      // Output message
+      debug("Trying to connect to Wifi...");
+
+      // Wait until connected
+      while (WiFi.status() != WL_CONNECTED && timeout > 0) {
+        delay(WIFI_WAIT);
+        timeout -= WIFI_WAIT;
+        debug("Waiting for connection...");
+      }
+
+      if ( WiFi.status() == WL_CONNECTED ) {
+        // Output message
+        debug("Connected to Wifi!");
+        // return OK
+        return true;
+      } else {
+        // Say that timeout was reached
+        debug("Timeout reached for Wifi connection");
+
+        // If this was the last retry
+        if (retries == 0 ) {
+          // say that is was impossible to connect to the Wifi
+          debug("Impossible to connect to specified Wifi.");
+          // return error
+          return false;
+        }
+      }
     }
-
-    // Output message
-    debug("Connected to Wifi!");
   } else {
     // Say we are already connected
     debug("Wifi is already connected");
+
+    // return OK
+    return true;
   }
 }
 

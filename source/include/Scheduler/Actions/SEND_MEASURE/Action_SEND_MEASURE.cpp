@@ -14,10 +14,13 @@ Action_SEND_MEASURE::Action_SEND_MEASURE(TimeMask *tMask, ActionMask *aMask, uin
 
 void Action_SEND_MEASURE::runAction() const {
   // First connect to the Wifi
-  connectToWifi();
-
-  // Then send the measures to the server
-  sendWifi();  
+  if( connectToWifi() ) {
+    // Then send the measures to the server
+    sendWifi();  
+  } else {
+    // no connection to Wifi was possible
+    debug("Connection to wifi was impossible, skipping current action");
+  }
 }
 
 void Action_SEND_MEASURE::addAdditionalActionData(char * argument, uint8_t argumentNumber) const {
