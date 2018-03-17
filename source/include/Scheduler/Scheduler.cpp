@@ -63,7 +63,7 @@ bool resetScheduler(bool hardReset) {
 
     // go to sleep
     ESP.deepSleep(SCHEDULER_RESET_ERROR_SLEEP*1000);
-  } else if ( !hardReset ) {
+  } else if (!error) {
     // sort the schedule
     sortSchedule();
 
