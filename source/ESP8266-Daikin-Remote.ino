@@ -146,7 +146,7 @@ void setup() {
   
   // Go do deepsleep until the cycle manager says so
   // TODO: Improve the deepSleep management to allow for longer deep sleeps (>71 minutes)
-  ESP.deepSleep(getNextCycle());
+  ESP.deepSleep(getNextCycle(), WAKE_NO_RFCAL);
 }
 
 void loop() {
