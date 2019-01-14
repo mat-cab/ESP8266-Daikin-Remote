@@ -18,10 +18,14 @@ uint16_t * CycleManager_RTCData::getIteration() {
   return &(this->iteration);
 }
 
-uint16_t * CycleManager_RTCData::getCycleTime() {
+uint64_t * CycleManager_RTCData::getCycleTime() {
   return &(this->cycle_time);
 }
 
 uint16_t * CycleManager_RTCData::getLastIteration() {
   return &(this->lastIteration);
+}
+
+uint64_t * CycleManager_RTCData::getRemainingSleepTime() {
+  return &(this->remainingSleepTime);
 }

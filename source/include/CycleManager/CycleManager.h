@@ -11,13 +11,20 @@
 // Minimum time in s between each adjust cycle factor
 #define CYCLE_ADJUST_FACTOR_MIN_TIME  60
 
+// Maximum time for ta single deepsleep in us
+#define CYCLE_MAX_DEEPSLEEP_TIME 60E6
+
 void initializeCycleManager();
 
 void resetCycleManager();
 
 void updateCycleManager();
 
-uint32_t getNextCycle();
+void updateDeepSleepTimers(uint64_t sleepTime);
+
+void goToDeepSleep();
+
+uint64_t getNextCycle();
 
 void updateCycleFactor(int32_t timeShift, uint32_t timeSpan);
 

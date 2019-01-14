@@ -14,7 +14,9 @@ time_t *timestamp;
 time_t *lastUpdateTimestamp;
 uint16_t *iteration;
 uint16_t *lastIteration;
-uint16_t *cycleTime;
+uint64_t *cycleTime;
+uint64_t *remainingSleepTime;
+uint32_t currentSleepTime;
 bool reset;
 
 void initializeCycleManager() {
@@ -27,7 +29,23 @@ void initializeCycleManager() {
   cycleTime = cycleManagerRTCData->getCycleTime();
 
   // Set the estimated local time
-  setTime( *timestamp + (time_t)(*cycleTime*(*iteration)));  
+  setTime( *timestamp + (time_t)(*cycleTime*(*iteration))); 
+
+  // Read the remaining sleep time from the RTC memory 
+  remainingSleepTime = cycleManagerRTCData->getRemainingSleepTime();
+
+  // Verify there is still some time to sleep
+  if ( *remainingSleepTime > 0 ) {
+    // update the deep sleep timers
+    // Set the remainingSleepTime properly (do not overflow CYCLE_MAX_DEEPSLEEP_TIME)
+    updateDeepSleepTimers(*remainingSleepTime);
+
+    // save the RTC memory
+    writeRTCmem(); 
+
+    // continue the deepsleep
+    goToDeepSleep();
+  }
 
   // initialize with no reset
   reset = false;
@@ -53,6 +71,9 @@ void resetCycleManager() {
   // reset the last iteration to 0
   *lastIteration = 0;
 
+  // reset the remaining sleep time to 0
+  *remainingSleepTime = 0;
+
   // set the reset flag to true
   reset = true;
 }
@@ -63,13 +84,40 @@ void updateCycleManager() {
 
   // Compute the next iterations (in case of cycle overflow)
   *iteration = *iteration + (1 + (uint32_t)millis() / (uint32_t)(*cycleTime * 1000));
+  
+  // Find how long we need to wait for the next cycle
+  // TODO: support the wake up at the next action (and not necessarly on a cycle)
+  uint64_t nextCycleWaitTime = getNextCycle();
+  
+  // update the deep sleep timers
+  updateDeepSleepTimers( nextCycleWaitTime );
 }
 
-uint32_t getNextCycle() {
-  // TODO: Allow to wake up at the next action (and not necessarly on a cycle)
+void updateDeepSleepTimers(uint64_t sleepTime) {
+    // Make sure that currentSleepTime does not overflow CYCLE_MAX_DEEPSLEEP_TIME
+    if ( sleepTime > CYCLE_MAX_DEEPSLEEP_TIME ) {
+      // We need to sleep for a long time
+      currentSleepTime = CYCLE_MAX_DEEPSLEEP_TIME;
 
-  uint32_t waitMillis = *cycleTime * 1000 * getIterationsFromLastCycle();
-  uint32_t waitMicros = (waitMillis*1000-micros())*(*cycleFactor);
+      // set the remaining sleep time accordingly
+      *remainingSleepTime = sleepTime - CYCLE_MAX_DEEPSLEEP_TIME;
+    } else {
+      // we are just about to wake up (last deepsleep)
+      currentSleepTime = sleepTime;
+
+      // set that we no longer need to deepsleep
+      *remainingSleepTime = 0;
+    }
+}
+
+void goToDeepSleep() {
+    // Go to deepsleep for the currentSleepTime
+    ESP.deepSleep(currentSleepTime, WAKE_NO_RFCAL);
+}
+
+uint64_t getNextCycle() {
+  uint64_t waitMillis = *cycleTime * 1000 * getIterationsFromLastCycle();
+  uint64_t waitMicros = (waitMillis*1000-micros())*(*cycleFactor);
 
   return waitMicros;
 }
