@@ -3,7 +3,7 @@
 
 // Used for debug purposes
 // Speed for the serial connection
-#define DEBUG_SPEED 115200
+#define DEBUG_SPEED 9600
 // GPIO pin for activating/deactivating the DEBUG
 #define DEBUG_PIN 4
 
