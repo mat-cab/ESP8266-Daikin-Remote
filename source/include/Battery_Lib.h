@@ -9,7 +9,7 @@
 // GPIO to read the battery voltage
 #define BATCHECK_READ A0
 // Delay between circuit activation and measure
-#define BATCHECK_DELAY 10
+#define BATCHECK_DELAY 50
 // Number of measures (to compute the mean value)
 #define BATCHECK_LOOPS  10
 // Delay between each measures
