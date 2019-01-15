@@ -34,7 +34,7 @@ void setup() {
   -------------------------------------------------- */
   
   // initialize the cycleManager
-  initializeCycleManager();
+  initializeCycleManager(corruptedRTCmem);
 
   // Init the debug
   initializeDebug();

@@ -19,7 +19,7 @@ uint64_t *remainingSleepTime;
 uint32_t currentSleepTime;
 bool reset;
 
-void initializeCycleManager() {
+void initializeCycleManager(bool corruptedMemory) {
   // Read the pointer from the RTC memory
   cycleManagerRTCData = getRTCPointer_cycleManagerRTCData();
 
@@ -28,14 +28,17 @@ void initializeCycleManager() {
   iteration = cycleManagerRTCData->getIteration();
   cycleTime = cycleManagerRTCData->getCycleTime();
 
-  // Set the estimated local time
-  setTime( *timestamp + (time_t)(*cycleTime*(*iteration))); 
+  // Check whether the memory is corrupted or not
+  if ( !corruptedMemory ) {
+    // Set the estimated local time
+    setTime( *timestamp + (time_t)(*cycleTime*(*iteration))); 
+  }
 
   // Read the remaining sleep time from the RTC memory 
   remainingSleepTime = cycleManagerRTCData->getRemainingSleepTime();
 
-  // Verify there is still some time to sleep
-  if ( *remainingSleepTime > 0 ) {
+  // Verify that the memory is not corrupted and whether we still need to deepsleep
+  if ( !corruptedMemory && *remainingSleepTime > 0 ) {
     // update the deep sleep timers
     // Set the remainingSleepTime properly (do not overflow CYCLE_MAX_DEEPSLEEP_TIME)
     updateDeepSleepTimers(*remainingSleepTime);

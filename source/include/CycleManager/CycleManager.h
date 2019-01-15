@@ -5,7 +5,7 @@
 
 // Constants for the cycles
 // Cycle time in s
-#define CYCLE_TIME 30
+#define CYCLE_TIME 600
 #define CYCLE_FACTOR 1.00
 
 // Minimum time in s between each adjust cycle factor
@@ -14,7 +14,7 @@
 // Maximum time for ta single deepsleep in us
 #define CYCLE_MAX_DEEPSLEEP_TIME 60E6
 
-void initializeCycleManager();
+void initializeCycleManager(bool corruptedMemory);
 
 void resetCycleManager();
 
