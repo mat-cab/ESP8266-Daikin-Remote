@@ -138,7 +138,7 @@ void runScheduler() {
     do {
       // Execute the action
       schedule->run();
-  
+ 
       // sort the actions in the schedule
       sortSchedule();
     } while (schedule->getSecondsFromNow() <= 0);
@@ -186,6 +186,20 @@ void sortSchedule() {
 bool isSchedulerActive() {
   return (schedule != NULL);
 }
+
+uint64_t remainingTimeBeforeNextAction() {
+  // First option : Scheduler is not strict
+  #ifndef SCHEDULER_STRICT
+  // Always return forever
+  return UINT64_MAX;
+
+  #else
+  // Return the time to the next action
+  return schedule->getSecondsFromNow();
+
+  #endif
+}
+
 
 void printSchedule() {
   uint8_t i = 1;

@@ -8,7 +8,7 @@ void Wifi_RTCData::setTimestamp(time_t newTimestamp) {
   this->timestamp = newTimestamp;
 }
 
-void Wifi_RTCData::increaseTimestamp(uint16_t timeIncrease) {
+void Wifi_RTCData::increaseTimestamp(uint32_t timeIncrease) {
   this->timestamp += timeIncrease;
 }
 

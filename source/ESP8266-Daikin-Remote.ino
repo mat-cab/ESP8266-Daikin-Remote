@@ -22,9 +22,6 @@ void setup() {
   // Save the power
   disconnectWifi();
 
-  // Initial declaration
-  uint16_t *iteration;
-
   // Read the RTC memory
   bool corruptedRTCmem = readRTCmemory();
 
@@ -53,7 +50,6 @@ void setup() {
 
   // Now that time is set, update other less usefull values
   measurement measure;  
-  iteration = getRTCPointer_cycleManagerRTCData()->getIteration();
 
   // Also reset initialize the wifi library
   initializeWifi();
@@ -133,7 +129,7 @@ void setup() {
   -------------------------------------------------- */
 
   // Send message to debug
-  debug("*** End of iteration "+ String(*iteration) +" - Time is "+String(weekday())+" "+String(day())+"/"+String(month())+"/"+String(year())+" "+String(hour())+":"+String(minute())+":"+String(second())+" ***");
+  debug("*** End of iteration - Time is "+String(weekday())+" "+String(day())+"/"+String(month())+"/"+String(year())+" "+String(hour())+":"+String(minute())+":"+String(second())+" ***");
 
   // Close the debug
   endDebug();

@@ -20,7 +20,7 @@ uint16_t getDelta(struct measurement *measureDatastore) {
 }
 
 void performMeasurement(struct measurement *measureDatastore) {
-  measureDatastore->deltaWithLastMeasurement = getCycleTime() * getIterationsFromLastCycle(); 
+  measureDatastore->deltaWithLastMeasurement = getTimeSlept(); 
   measureTemperatureHumidity(measureDatastore);
   measureBattery(measureDatastore);
 }

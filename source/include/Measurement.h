@@ -5,7 +5,7 @@
 
 // structures for the meaasurement (stored in EEPROM)
 struct measurement {
-  uint16_t deltaWithLastMeasurement;
+  uint32_t deltaWithLastMeasurement;
   byte humidity[2];
   byte temperature[2];
   uint16_t voltage;

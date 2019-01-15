@@ -2,6 +2,7 @@
 
 #include "Time.h"
 
+#include "../Scheduler/Scheduler.h"
 #include "../Debug_Lib.h"
 #include "../CustomConstants.h"
 #include "../RTCMem_Lib.h"
@@ -9,13 +10,15 @@
 #include "CycleManager.h"
 
 CycleManager_RTCData * cycleManagerRTCData;
+// Data from the RTC memory
 float *cycleFactor;
 time_t *timestamp;
-time_t *lastUpdateTimestamp;
-uint16_t *iteration;
-uint16_t *lastIteration;
+time_t *timeElapsed;
 uint64_t *cycleTime;
 uint64_t *remainingSleepTime;
+uint32_t *timeSlept;
+
+// Internal data
 uint32_t currentSleepTime;
 bool reset;
 
@@ -25,13 +28,12 @@ void initializeCycleManager(bool corruptedMemory) {
 
   // Read the pointers from the RTC memory
   timestamp = cycleManagerRTCData->getTimestamp();
-  iteration = cycleManagerRTCData->getIteration();
-  cycleTime = cycleManagerRTCData->getCycleTime();
+  timeElapsed = cycleManagerRTCData->getTimeElapsed();
 
   // Check whether the memory is corrupted or not
   if ( !corruptedMemory ) {
     // Set the estimated local time
-    setTime( *timestamp + (time_t)(*cycleTime*(*iteration))); 
+    setTime( *timestamp + *timeElapsed ); 
   }
 
   // Read the remaining sleep time from the RTC memory 
@@ -53,47 +55,69 @@ void initializeCycleManager(bool corruptedMemory) {
   // initialize with no reset
   reset = false;
 
+  // Read cycleTime pointer from RTC memory
+  cycleTime = cycleManagerRTCData->getCycleTime();
   // Read cycleFactor pointer from RTC memory
   cycleFactor = cycleManagerRTCData->getCycleFactor();
-  // Read the last iteration from RTC memory
-  lastIteration = cycleManagerRTCData->getLastIteration();
-  // Read the last updateTime timestamp
-  lastUpdateTimestamp = cycleManagerRTCData->getLastUpdateTimestamp();
+  // Read the time that we slept for
+  timeSlept = cycleManagerRTCData->getTimeSlept();
 }
 
 void resetCycleManager() {
+  // reset the timestamp to 0
+  *timestamp = 0;
+
+  // reset the time elapsed to 0
+  *timeElapsed = 0;
+
   // Also reset the cycleFactor to the initial value
   *cycleFactor = CYCLE_FACTOR; 
 
   // Reset the cycleTime to the initial value
   *cycleTime = CYCLE_TIME;
 
-  // reset the iterations to 0
-  *iteration = 0;
-
-  // reset the last iteration to 0
-  *lastIteration = 0;
-
   // reset the remaining sleep time to 0
   *remainingSleepTime = 0;
+
+  // reset the time slept to 0
+  *timeSlept = 0;
 
   // set the reset flag to true
   reset = true;
 }
 
 void updateCycleManager() {
-  // Save the last iteration
-  *lastIteration = *iteration;
+  // Find how long we need to wait for the next action (in s)
+  uint64_t nextActionWaitTime = remainingTimeBeforeNextAction();
+  
+  // Find how long we need to wait for the next cycle (in s)
+  // note that we take into account any cycle overflow
+  uint64_t nextCycleWaitTime = *cycleTime * ( 1 + millis() / (*cycleTime * 1000));
 
-  // Compute the next iterations (in case of cycle overflow)
-  *iteration = *iteration + (1 + (uint32_t)millis() / (uint32_t)(*cycleTime * 1000));
-  
-  // Find how long we need to wait for the next cycle
-  // TODO: support the wake up at the next action (and not necessarly on a cycle)
-  uint64_t nextCycleWaitTime = getNextCycle();
-  
-  // update the deep sleep timers
-  updateDeepSleepTimers( nextCycleWaitTime );
+  // get the minimal one
+  // note that if scheduler is not strict, then it will reply that next action is due in forever
+  if (nextActionWaitTime > nextCycleWaitTime) {
+    // Save that we will sleep for nextCycleWaitTime
+    *timeSlept = nextCycleWaitTime;
+
+    // Also increase the timeElapsed
+    *timeElapsed += nextCycleWaitTime;
+
+    // update the deep sleep timers to the next cycle
+    // Convert to us and use the cycleFactor
+    // Also adjust with what has already passed in this cycle
+    updateDeepSleepTimers( (nextCycleWaitTime * 1E6 - micros()) * (*cycleFactor) );
+  } else {
+    // Save that we will sleep for nextActionWaitTime
+    *timeSlept = nextActionWaitTime;
+
+    // Also increase the timeElapsed
+    *timeElapsed += nextActionWaitTime;
+
+    // update the deep sleep timers to the next action
+    // Convert to us and use the cycleFactor
+    updateDeepSleepTimers( nextActionWaitTime * 1E6 * (*cycleFactor) );
+  }
 }
 
 void updateDeepSleepTimers(uint64_t sleepTime) {
@@ -118,13 +142,6 @@ void goToDeepSleep() {
     ESP.deepSleep(currentSleepTime, WAKE_NO_RFCAL);
 }
 
-uint64_t getNextCycle() {
-  uint64_t waitMillis = *cycleTime * 1000 * getIterationsFromLastCycle();
-  uint64_t waitMicros = (waitMillis*1000-micros())*(*cycleFactor);
-
-  return waitMicros;
-}
-
 void updateCycleFactor(int32_t timeShift, uint32_t timeSpan) {
   // Do not update if there was a reset of the cycleManager  
   if (!reset) {  
@@ -136,23 +153,10 @@ void updateCycleFactor(int32_t timeShift, uint32_t timeSpan) {
 void updateCycleTime(uint32_t newCycleTime) {
   debug("Updating cycle time");
 
-  // save the cycle start
-  time_t cycleStart = getCurrentCycleStart();
-
-  // save the number of cycles since the last cycle
-  uint16_t lastCycleIteration = getIterationsFromLastCycle();
- 
   debug("Setting new cycle time to "+String(newCycleTime));
-  // set the new cycle time
+  
+  // set the new cycle time (in s)
   *cycleTime = newCycleTime;
-
-  // reset the last iteration to 0
-  *lastIteration = 0;
-  // reset the iterations to 1 (to avoid having 0 iterations in a cycle)
-  *iteration = lastCycleIteration;
-
-  // reset the timestamp to the cycle start
-  *timestamp = cycleStart;
 } 
 
 int32_t updateTime(String timestampString) {
@@ -221,12 +225,12 @@ int32_t updateTime(String timestampString) {
   int32_t shift =  newTime - lastTimestamp;
 
   // if there is a bit of time between the two updates
-  if ((lastTimestamp - *lastUpdateTimestamp) > CYCLE_ADJUST_FACTOR_MIN_TIME) {
+  if ((lastTimestamp - *timestamp) > CYCLE_ADJUST_FACTOR_MIN_TIME) {
     // Adjust cycle factor wrt last time update
-    updateCycleFactor(shift, (uint32_t) (lastTimestamp - *lastUpdateTimestamp));
+    updateCycleFactor(shift, (uint32_t) (lastTimestamp - *timestamp));
 
     // Ouput the time shift  
-    debug("Shift was: "+String(shift)+" seconds on a span of "+String((lastTimestamp - *lastUpdateTimestamp))+" s"); 
+    debug("Shift was: "+String(shift)+" seconds on a span of "+String((lastTimestamp - *timestamp))+" s"); 
 
     // Also output the adjusted cycleFactor
     debug("Adjusted cycle factor to: "+String(*cycleFactor));
@@ -237,16 +241,8 @@ int32_t updateTime(String timestampString) {
   // Therefore it is necessary to remove the millis since the start of the iteration
   *timestamp = newTime - (currentMillis/(uint32_t)1000);
 
-  // also set the lastUpdateTimestamp
-  *lastUpdateTimestamp = *timestamp;
-  
-  // save the number of cycles since the last cycle
-  uint16_t lastCycleIteration = getIterationsFromLastCycle();
-
-  // reset the last iteration to 0
-  *lastIteration = 0;
-  // reset the iterations to 0
-  *iteration = 0;
+  // Also reset to 0 the timeElapsed
+  *timeElapsed = 0;
 
   // return the shift for other timers adjustement
   return shift;
@@ -256,8 +252,8 @@ uint16_t getCycleTime() {
   return *cycleTime;
 }
 
-uint16_t getIterationsFromLastCycle() {
-  return (*iteration - *lastIteration);
+uint32_t getTimeSlept() {
+  return *timeSlept;
 }
 
 time_t getCurrentCycleStart() {

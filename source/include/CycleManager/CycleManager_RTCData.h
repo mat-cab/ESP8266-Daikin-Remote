@@ -10,25 +10,22 @@ class CycleManager_RTCData {
   float cycle_factor;
   // 4 bytes: Timestamp of the start of cycle
   time_t timestamp; 
-  // 4 bytes: Timestamp of the last time update
-  time_t lastUpdateTimestamp;
-  // 2 bytes: Iteration in the cycle
-  uint16_t iteration;
+  // 4 bytes : Time elapsed since the start of cycle
+  time_t timeElapsed;
   // 2 bytes: Cycle time
   uint64_t cycle_time;
-  // 2 bytes: Last iteration in the cycle
-  uint16_t lastIteration;
-  // 8 bytes : Time remaining to sleep
+  // 8 bytes : Time remaining to sleep in machine cycles (in us + converted with cycleFactor)
   uint64_t remainingSleepTime;
+  // 4 bytes : Time slept wrt last iteration in s
+  uint32_t timeSlept;
 
   public:
   // Getters
   float * getCycleFactor();
   time_t * getTimestamp();
-  time_t * getLastUpdateTimestamp();
-  uint16_t * getIteration();
+  time_t * getTimeElapsed();
   uint64_t * getCycleTime();
-  uint16_t * getLastIteration();
   uint64_t * getRemainingSleepTime();
+  uint32_t * getTimeSlept();
 };
 #endif
