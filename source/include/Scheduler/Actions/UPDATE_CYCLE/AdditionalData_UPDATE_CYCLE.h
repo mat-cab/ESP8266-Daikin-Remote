@@ -8,7 +8,7 @@
 class AdditionalData_UPDATE_CYCLE : public AbstractAdditionalData {
   private:
   // 3 bytes are necessary for the UPDATE_CYCLE action
-  // Bits 0 to 23 : new cycle in ms (max 16777215 s, approx 279 minutes)
+  // Bits 0 to 23 : new cycle in s (max 16777215 s, approx 279620 minutes, approx 4660 hours)
   uint8_t rawData[3]; 
 
   public:
