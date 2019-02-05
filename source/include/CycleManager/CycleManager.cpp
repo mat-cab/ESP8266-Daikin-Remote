@@ -88,7 +88,8 @@ void resetCycleManager() {
 
 void updateCycleManager() {
   // Find how long we need to wait for the next action (in s)
-  uint64_t nextActionWaitTime = remainingTimeBeforeNextAction();
+  // Add a second to make sure we will wake up after the scheduled action
+  uint64_t nextActionWaitTime = remainingTimeBeforeNextAction() + 1;
   
   // Find how long we need to wait for the next cycle (in s)
   // note that we take into account any cycle overflow
