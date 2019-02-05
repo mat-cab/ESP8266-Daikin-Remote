@@ -9,7 +9,7 @@
 #define CYCLE_FACTOR 1.00
 
 // Minimum time in s between each adjust cycle factor
-#define CYCLE_ADJUST_FACTOR_MIN_TIME  60
+#define CYCLE_ADJUST_FACTOR_MIN_TIME  600
 
 // Maximum time for a single deepsleep in us
 // Set so that each deepsleep is max 1h10m
