@@ -113,7 +113,8 @@ void updateCycleManager() {
     *timeSlept = nextActionWaitTime;
 
     // Also increase the timeElapsed
-    *timeElapsed += nextActionWaitTime;
+    // Do not forget to add the time that we spend in this cycle
+    *timeElapsed += nextActionWaitTime + millis()/1000;
 
     // update the deep sleep timers to the next action
     // Convert to us and use the cycleFactor
