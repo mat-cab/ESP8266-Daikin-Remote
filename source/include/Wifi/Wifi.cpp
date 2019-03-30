@@ -95,13 +95,19 @@ void disconnectWifi() {
 void sendWifi() {
   char header[100];
   String jsonBuffer, nextEntry;
-  bool retry = true;
+  bool connectionOK = false, retry = true;
+  uint8_t retries = WIFI_SERVER_RETRIES;
 
   client = new WiFiClient();
  
   // Connect to server
-  while (client->connect(IOT_SERVER, IOT_PORT) && retry) {
+  while (retry && retries-->0) {
+    connectionOK = client->connect(IOT_SERVER, IOT_PORT);
 
+    if ( !connectionOK ) {
+      debug("Connection error with the IOT server");
+      continue;
+    }
     // Create the JSON buffer
     jsonBuffer = "{\"write_api_key\":\""+IOT_STREAM_KEY+"\",\"updates\":[";
 
