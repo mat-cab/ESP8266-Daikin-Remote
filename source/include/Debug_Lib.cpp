@@ -49,24 +49,3 @@ void debug(struct measurement *measure) {
     Serial.println("Delta with last measure : "+String( getDelta(measure) )+" s");
   }
 }
-
-String uint64ToString(uint64_t input, uint8_t base) {
-  String result = "";
-  // prevent issues if called with base <= 1
-  if (base < 2) base = 10;
-  // Check we have a base that we can actually print.
-  // i.e. [0-9A-Z] == 36
-  if (base > 36) base = 10;
-
-  do {
-    char c = input % base;
-    input /= base;
-
-    if (c < 10)
-      c += '0';
-    else
-      c += 'A' - 10;
-    result = c + result;
-  } while (input);
-  return result;
-}
