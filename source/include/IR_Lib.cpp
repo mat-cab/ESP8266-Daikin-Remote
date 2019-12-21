@@ -3,13 +3,15 @@
 #include "IRremoteESP8266.h"
 #include "IRsend.h"
 #include "ir_Daikin.h"
+#include "ir_Coolix.h"
 
 #include "Debug_Lib.h"
 
 #include "IR_Lib.h"
 
 // Create structure for daikin remote
-IRDaikinESP daikinir(IR_PIN);
+//IRDaikinESP daikinir(IR_PIN);
+IRCoolixAC daikinir(IR_PIN);
 
 void initializeIR() {
   debug("Initializing IR library...");
@@ -35,12 +37,12 @@ void sendIRCommand(uint8_t mode, uint8_t temperature, uint8_t fanSpeed, bool swi
   daikinir.setMode(mode);
 
   // set swings
-  daikinir.setSwingVertical(swingUD);
+/*  daikinir.setSwingVertical(swingUD);
   daikinir.setSwingHorizontal(swingLR);
 
   // set auxiliaries
   daikinir.setPowerful(powerful);
-  daikinir.setQuiet(silent);
+  daikinir.setQuiet(silent);*/
 
   debug("Sending IR signal...");
 
