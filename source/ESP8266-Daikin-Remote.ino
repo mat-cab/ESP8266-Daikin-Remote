@@ -16,7 +16,7 @@
 #include "include/CycleManager/CycleManager.h"
 #include "include/Debug_Lib.h"
 #include "include/Scheduler/Scheduler.h"
-#include "include/IR_Lib.h"
+#include "include/IR/IR_Lib.h"
 
 void setup() {
   // Save the power
