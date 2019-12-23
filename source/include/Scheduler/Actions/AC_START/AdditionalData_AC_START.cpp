@@ -19,7 +19,7 @@ AC_MODE AdditionalData_AC_START::getACMode() const {
 }
 
 uint8_t AdditionalData_AC_START::getTemperature() const {
-  return (18 + ((this->rawData & 0x1E00) >> 9));
+  return getAbsoluteTemperature((this->rawData & 0x1E00) >> 9);
 }
 
 AC_FANSPEED AdditionalData_AC_START::getFanSpeed() const {
@@ -38,7 +38,7 @@ void AdditionalData_AC_START::setACMode(String mode) {
 }
 
 void AdditionalData_AC_START::setTemperature(uint8_t temperature) {
-  this->rawData = (this->rawData & 0xE7FF) | (((temperature - 18) & 0x0F) << 9);
+  this->rawData = (this->rawData & 0xE7FF) | ((getProtocolTemperature(temperature) & 0x0F) << 9);
 }
 
 void AdditionalData_AC_START::setFanSpeed(String fanSpeed) {

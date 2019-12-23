@@ -7,6 +7,7 @@
 
 #include "../../../AC/AC_Mode.h"
 #include "../../../AC/AC_FanSpeed.h"
+#include "../../../AC/AC_Temperature.h"
 
 class AdditionalData_AC_START : public AbstractAdditionalData {
   private:
