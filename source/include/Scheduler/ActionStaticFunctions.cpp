@@ -48,6 +48,13 @@ Action * getNewAction(ActionType actionType, DaysMask dMask, uint8_t hour, uint8
 Action * parseActionFromString(String actionString) {
   debug("Parsing action : "+actionString);
 
+  // check if action is a comment
+  if ( actionString[0] == '#' ) {  
+    debug("Action is commented, it will not be taken into account");
+    // exit
+    return NULL;
+  }
+
   char * argument = strtok(const_cast<char*>(actionString.c_str()),SCHEDULER_ACTION_PARSER_DELIMITER);
   ActionType aType;
   uint8_t argumentNumber = 0, daysMask = 0, hours = 0, minutes = 0, seconds = 0;
