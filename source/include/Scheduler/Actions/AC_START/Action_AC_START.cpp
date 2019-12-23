@@ -1,9 +1,9 @@
 #include "../../../Debug_Lib.h"
 #include "../../../IR/IR_Lib.h"
 
-#include "AdditionalData_AC_START.h"
-
 #include "Action_AC_START.h"
+
+#include "AdditionalData_AC_START.h"
 
 Action_AC_START::Action_AC_START(ActionType actionType, DaysMask dMask, uint8_t hour, uint8_t minute, uint8_t second) : Action(actionType, dMask, hour, minute, second) {
   this->initializeAdditionalData(NULL);
@@ -28,10 +28,25 @@ void Action_AC_START::runAction() const {
   IRsetMode(actionData->getACMode());
   IRsetTemperature(actionData->getTemperature());
   IRsetFanSpeed(actionData->getFanSpeed());
-  IRsetBooleanOption("SwingVertical", actionData->getSwingLR());
-  IRsetBooleanOption("SwingHorizontal", actionData->getSwingUD());
-  IRsetBooleanOption("Powerful", actionData->getPowerful());
-  IRsetBooleanOption("Silent", actionData->getSilent());
+
+  // This part is the protocol specific part!
+  switch (getIRProtocol()) {
+    case DAIKIN_PROTOCOL:
+      IRsetBooleanOption("SwingVertical", actionData->getBooleanOption(0));
+      IRsetBooleanOption("SwingHorizontal", actionData->getBooleanOption(1));
+      IRsetBooleanOption("Powerful", actionData->getBooleanOption(2));
+      IRsetBooleanOption("Silent", actionData->getBooleanOption(3));
+      IRsetBooleanOption("Powerful", actionData->getBooleanOption(4));
+      IRsetBooleanOption("Sensor", actionData->getBooleanOption(5));
+      break;
+    case COOLIX_PROTOCOL:
+      IRsetBooleanOption("Led", actionData->getBooleanOption(0));
+      IRsetBooleanOption("Swing", actionData->getBooleanOption(1));
+      IRsetBooleanOption("Sleep", actionData->getBooleanOption(2));
+      IRsetBooleanOption("Turbo", actionData->getBooleanOption(3));
+      IRsetBooleanOption("Clean", actionData->getBooleanOption(4));
+      break;
+  }
 
   IRsendCommand(); 
 }
@@ -47,22 +62,15 @@ void Action_AC_START::addAdditionalActionData(char * argument, uint8_t argumentN
       actionData->setTemperature(atoi(argument));
       break;
     case 3:
-      actionData->setFanSpeed(atoi(argument));
+      actionData->setFanSpeed(argument);
       break;
     case 4:
-      actionData->setSwingLR(strcmp( argument, "1") == 0);
-      break;
     case 5:
-      actionData->setSwingUD(strcmp( argument, "1") == 0);
-      break;
     case 6:
-      actionData->setPowerful(strcmp( argument, "1") == 0);
-      break;
     case 7:
-      actionData->setSilent(strcmp( argument, "1") == 0);
-      break;
     case 8:
-      actionData->setIntelligentEye(strcmp( argument, "1") == 0);
+    case 9:
+      actionData->setBooleanOption(argumentNumber - 4, strcmp( argument, "1") == 0);
       break;
     default:
       debug("Unknown argument added to the AC_START action: "+String(argument));

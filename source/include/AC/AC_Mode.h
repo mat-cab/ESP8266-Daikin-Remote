@@ -4,13 +4,13 @@
 #include "Arduino.h"
 
 // Enum for the action types
-// Limited to 16 action types!
+// Limited to 8 action types (cf Additional_Data_AC_Start.h)
 enum AC_MODE : uint8_t {
   AUTO = 0,
-  DRY = 2,
-  COOL = 3,
-  HEAT = 4,
-  FAN = 5
+  DRY,
+  COOL,
+  HEAT,
+  FAN
 };
 
 String printACMode( AC_MODE mode );
