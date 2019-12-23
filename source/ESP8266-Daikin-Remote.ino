@@ -81,7 +81,8 @@ void setup() {
     resetWifi();
 
     // Send an OFF command to warn that it was started!
-    sendIRStop(); 
+    IRsetOff();
+    IRsendCommand(); 
   }
 
   // send the schedule to the debug

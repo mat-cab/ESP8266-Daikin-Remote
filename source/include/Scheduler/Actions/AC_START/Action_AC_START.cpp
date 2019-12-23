@@ -24,7 +24,16 @@ void Action_AC_START::initializeAdditionalData(uint8_t * aDataPointer) {
 void Action_AC_START::runAction() const {
   AdditionalData_AC_START *actionData = (AdditionalData_AC_START *)this->aData;
 
-  sendIRCommand(actionData->getACMode(), actionData->getTemperature(), actionData->getFanSpeed(), actionData->getSwingLR(), actionData->getSwingUD(), actionData->getPowerful(), actionData->getSilent());
+  IRsetOn();
+  IRsetMode(actionData->getACMode());
+  IRsetTemperature(actionData->getTemperature());
+  IRsetFanSpeed(actionData->getFanSpeed());
+  IRsetBooleanOption("SwingVertical", actionData->getSwingLR());
+  IRsetBooleanOption("SwingHorizontal", actionData->getSwingUD());
+  IRsetBooleanOption("Powerful", actionData->getPowerful());
+  IRsetBooleanOption("Silent", actionData->getSilent());
+
+  IRsendCommand(); 
 }
 
 void Action_AC_START::addAdditionalActionData(char * argument, uint8_t argumentNumber) const {

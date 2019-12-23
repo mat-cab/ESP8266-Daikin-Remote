@@ -5,59 +5,59 @@
 #include "ir_Daikin.h"
 #include "ir_Coolix.h"
 
-#include "Debug_Lib.h"
+#include "Remotes/IR_Remote_Daikin.h"
+#include "Remotes/IR_Remote_Coolix.h"
+#include "../Debug_Lib.h"
 
 #include "IR_Lib.h"
 
-// Create structure for daikin remote
-//IRDaikinESP daikinir(IR_PIN);
-IRCoolixAC daikinir(IR_PIN);
+AbstractRemote *remote;
 
 void initializeIR() {
   debug("Initializing IR library...");
-  
-  daikinir.begin();
+
+  switch (IR_DEFAULT_PROTOCOL) {
+    case COOLIX_PROTOCOL:
+      remote = new IR_Remote_Coolix();
+    default:
+      remote = new IR_Remote_Daikin();
+  }
 
   debug("Done!");
 }
 
-void sendIRCommand(uint8_t mode, uint8_t temperature, uint8_t fanSpeed, bool swingLR, bool swingUD, bool powerful, bool silent) {
-  debug("Setting up IR signal...");
-
-  // Set AC to ON
-  daikinir.on();
-
-  // Set fan
-  daikinir.setFan(fanSpeed);
-
-  // Set temperature
-  daikinir.setTemp(temperature);
-
-  // set mode
-  daikinir.setMode(mode);
-
-  // set swings
-/*  daikinir.setSwingVertical(swingUD);
-  daikinir.setSwingHorizontal(swingLR);
-
-  // set auxiliaries
-  daikinir.setPowerful(powerful);
-  daikinir.setQuiet(silent);*/
-
-  debug("Sending IR signal...");
-
-  // Send the signal
-  daikinir.send();
+void IRsetOn() {
+  remote->setOn();
 }
 
-void sendIRStop() {
-  debug("Setting up IR signal...");
+void IRsetOff() {
+  remote->setOff();
+} 
 
-  // Set AC to OFF
-  daikinir.off();
+void IRsetMode( AC_MODE acMode ) {
+  remote->setMode( acMode );
+}
 
-  debug("Sending IR signal...");
+void IRsetTemperature( uint8_t temperature ) {
+  remote->setTemperature( temperature );
+}
 
-  // Send the signal
-  daikinir.send();
+void IRsetFanSpeed( AC_FANSPEED acFanSpeed ) {
+  remote->setFanSpeed( acFanSpeed );
+}
+
+void IRsetBooleanOption( String optionName, bool optionValue ) {
+  remote->setBooleanOption( optionName, optionValue );
+}
+
+void IRsendCommand() {
+  debug("Sending IR command ...");
+
+  remote->sendCommand();
+
+  debug("IR command sent!");
+}
+
+IR_PROTOCOL getIRProtocol() {
+  return IR_DEFAULT_PROTOCOL;
 }

@@ -12,7 +12,9 @@ Action_AC_STOP::Action_AC_STOP(TimeMask *tMask, ActionMask *aMask, uint8_t *aDat
 }
 
 void Action_AC_STOP::runAction() const {
-  sendIRStop();
+  IRsetOff();
+
+  IRsendCommand();
 }
 
 void Action_AC_STOP::addAdditionalActionData(char * argument, uint8_t argumentNumber) const {

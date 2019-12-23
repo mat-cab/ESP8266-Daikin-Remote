@@ -22,8 +22,8 @@ uint8_t AdditionalData_AC_START::getTemperature() const {
   return (18 + ((this->rawData & 0x1E00) >> 9));
 }
 
-uint8_t AdditionalData_AC_START::getFanSpeed() const {
-  return ((this->rawData & 0x01E0) >> 5);
+AC_FANSPEED AdditionalData_AC_START::getFanSpeed() const {
+  return (AC_FANSPEED)((this->rawData & 0x01E0) >> 5);
 }
 
 bool AdditionalData_AC_START::getSwingLR() const {

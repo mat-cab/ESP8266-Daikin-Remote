@@ -5,14 +5,15 @@
 
 #include "../../AbstractAdditionalData.h"
 
-#include "AC_Mode.h"
+#include "../../../AC/AC_Mode.h"
+#include "../../../AC/AC_FanSpeed.h"
 
 class AdditionalData_AC_START : public AbstractAdditionalData {
   private:
   // 2 bytes are necessary for the AC_START action:
   // Bits 0 to 2: AC_MODE
   // Bits 3 to 6: Temperature (start at 18 deg C)
-  // Bits 7 to 10: Fan speed
+  // Bits 7 to 10: AC_FANSPEED
   // Bit 11: Enable swing control left/right
   // Bit 12: Enable swing control up/down
   // Bit 13: Enable powerful
@@ -31,7 +32,7 @@ class AdditionalData_AC_START : public AbstractAdditionalData {
   // Elaborate getters
   AC_MODE getACMode() const;
   uint8_t getTemperature() const;
-  uint8_t getFanSpeed() const;
+  AC_FANSPEED getFanSpeed() const;
   bool getSwingLR() const;
   bool getSwingUD() const;
   bool getPowerful() const;
