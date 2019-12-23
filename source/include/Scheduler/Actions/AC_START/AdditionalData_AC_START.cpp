@@ -27,7 +27,7 @@ AC_FANSPEED AdditionalData_AC_START::getFanSpeed() const {
 }
 
 bool AdditionalData_AC_START::getBooleanOption(uint8_t optionIndex) const {
-  uint8_t shift = 6 - optionIndex;
+  uint8_t shift = 5 - optionIndex;
   uint8_t mask = 0x0001 << shift;
   return ((this->rawData & mask) >> shift);
 }
@@ -47,7 +47,7 @@ void AdditionalData_AC_START::setFanSpeed(String fanSpeed) {
 }
 
 void AdditionalData_AC_START::setBooleanOption(uint8_t optionIndex, bool optionValue) {
-  uint8_t shift = 6 - optionIndex;
+  uint8_t shift = 5 - optionIndex;
   uint8_t mask = 0x0001 << shift;
   uint8_t flag = (optionValue ? 0x0001 : 0x0000) << shift;
   this->rawData = (this->rawData & ~mask) | flag;
@@ -58,6 +58,6 @@ void AdditionalData_AC_START::print() const {
   debug("- AC_Mode: "+String(printACMode(this->getACMode())));
   debug("- Temperature: "+String(this->getTemperature()));
   debug("- Fan speed: "+String(printACFanSpeed(this->getFanSpeed())));
-  for ( int i = 0; i < 7; i++ )
+  for ( int i = 0; i < 6; i++ )
     debug("- Boolean option "+String(i)+": "+String(this->getBooleanOption(i)));
 } 
