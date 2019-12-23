@@ -19,8 +19,10 @@ void initializeIR() {
   switch (IR_DEFAULT_PROTOCOL) {
     case COOLIX_PROTOCOL:
       remote = new IR_Remote_Coolix();
+      break;
     default:
       remote = new IR_Remote_Daikin();
+      break;
   }
 
   debug("Done!");
