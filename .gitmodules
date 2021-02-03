@@ -1,6 +1,6 @@
-[submodule "libraries/IRremoteESP8266"]
-	path = libraries/IRremoteESP8266
-	url = https://github.com/mat-cab/IRremoteESP8266.git
 [submodule "libraries/makeEspArduino"]
 	path = libraries/makeEspArduino
 	url = https://github.com/plerup/makeEspArduino.git
+[submodule "libraries/IRremoteESP8266"]
+	path = libraries/IRremoteESP8266
+	url = https://github.com/crankyoldgit/IRremoteESP8266
