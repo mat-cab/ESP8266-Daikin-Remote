@@ -14,6 +14,7 @@
 #include "Wifi.h"
 
 WiFiClient * client;
+WiFiClientSecure * sClient;
 
 Wifi_RTCData * wifiRTCData;
 
@@ -295,10 +296,11 @@ bool receiveWifi(Action ** schedule) {
   bool pageRetry;
   bool endOfHeader;
 
-  client = new WiFiClientSecure();
+  sClient = new WiFiClientSecure();
+  sClient->setInsecure();
 
   while (serverRetries-->0) {
-    connectionOK = client->connect(GIST_SERVER, GIST_PORT);
+    connectionOK = sClient->connect(GIST_SERVER, GIST_PORT);
 
     if ( !connectionOK ) {
       debug("Connection error with the schedule server");
@@ -311,15 +313,15 @@ bool receiveWifi(Action ** schedule) {
         debug("Connected to schedule server");
 
         sprintf(header, "GET %s HTTP/1.1", SCHEDULE_URL);
-        client->println(header); 
-        client->println("Host: "+String(GIST_SERVER));
-        client->println("Connection: close");
-        client->println();
+        sClient->println(header); 
+        sClient->println("Host: "+String(GIST_SERVER));
+        sClient->println("Connection: close");
+        sClient->println();
 
         // Here is the response
-        while (client->connected()) {
-          if ( client->available() ) {
-            String str = client->readStringUntil('\n');
+        while (sClient->connected()) {
+          if ( sClient->available() ) {
+            String str = sClient->readStringUntil('\n');
             
             if (endOfHeader == false) {
               if (str.startsWith("HTTP/1.1")) {
