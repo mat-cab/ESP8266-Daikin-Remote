@@ -4,3 +4,6 @@
 [submodule "libraries/IRremoteESP8266"]
 	path = libraries/IRremoteESP8266
 	url = https://github.com/crankyoldgit/IRremoteESP8266
+[submodule "libraries/Time"]
+	path = libraries/Time
+	url = https://github.com/PaulStoffregen/Time
