@@ -208,39 +208,49 @@ void sendWifi() {
 
     debug("Request sent!");
 
-    // Wait for the client response
-    while( !client->available() ) {
-      // TODO: Implement a timeout for the request
+    // Initialize timeout
+    int32_t timeout = WIFI_TIMEOUT;
 
+    // Wait for the client response
+    while( !client->available() && timeout > 0) {
       debug("Waiting for response...");
       
       delay(WIFI_WAIT);
-    }
 
-    debug("Response received!");
+      timeout -= WIFI_WAIT;
+    }
 
     int32_t timeShift = 0;
 
-    // Output its response
-    while (client->connected()) {
-      if ( client->available() )
-      {
-        String str = client->readStringUntil('\n');
-        
-        if (str.startsWith("HTTP/1.1")) {
-          // Do retry if return code is different from 202, which means OK
-          retry = (str.substring(9,12) != "202");
+    if ( timeout <= 0 ) {
+      debug("Timeout reached");
 
-          if (retry) {
-            debug("Error reply was: "+str);
+      // Force retry (should already be set so)
+      retry = true;
+    } else {
+      debug("Response received!");
+
+      // Output its response
+      while (client->connected()) {
+        if ( client->available() )
+        {
+          String str = client->readStringUntil('\n');
+          
+          if (str.startsWith("HTTP/1.1")) {
+            // Do retry if return code is different from 202, which means OK
+            retry = (str.substring(9,12) != "202");
+
+            if (retry) {
+              debug("Error reply was: "+str);
+            }
+          } else if (str.startsWith("Date: ")) {
+            timeShift = updateTime( str.substring(6) );
+          } else if (retry) {
+            // There was an error, print the output message
+            debug(str);
           }
-        } else if (str.startsWith("Date: ")) {
-          timeShift = updateTime( str.substring(6) );
-        } else if (retry) {
-          // There was an error, print the output message
-          debug(str);
-        }
-      }     
+        }     
+      }
     }
 
     if ( retry ) {
