@@ -231,25 +231,22 @@ void sendWifi() {
       debug("Response received!");
 
       // Output its response
-      while (client->connected()) {
-        if ( client->available() )
-        {
-          String str = client->readStringUntil('\n');
-          
-          if (str.startsWith("HTTP/1.1")) {
-            // Do retry if return code is different from 202, which means OK
-            retry = (str.substring(9,12) != "202");
+      while ( client->available() ) {
+        String str = client->readStringUntil('\n');
+        
+        if (str.startsWith("HTTP/1.1")) {
+          // Do retry if return code is different from 202, which means OK
+          retry = (str.substring(9,12) != "202");
 
-            if (retry) {
-              debug("Error reply was: "+str);
-            }
-          } else if (str.startsWith("Date: ")) {
-            timeShift = updateTime( str.substring(6) );
-          } else if (retry) {
-            // There was an error, print the output message
-            debug(str);
+          if (retry) {
+            debug("Error reply was: "+str);
           }
-        }     
+        } else if (str.startsWith("Date: ")) {
+          timeShift = updateTime( str.substring(6) );
+        } else if (retry) {
+          // There was an error, print the output message
+          debug(str);
+        }
       }
     }
 
