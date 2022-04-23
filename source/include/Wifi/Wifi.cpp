@@ -38,11 +38,20 @@ bool connectToWifi() {
     // Activate Wifi
     WiFi.mode(WIFI_STA);
 
+    // Set Wifi name
+    WiFi.hostname(WIFI_NAME);
+
     // set initial number of retries
     uint8_t retries = WIFI_RETRIES;
 
     while (retries-->0) {
       int32_t timeout = WIFI_TIMEOUT;
+
+// In case static IP must be used
+#ifdef WIFI_USE_STATIC_IP
+      // Use static IP Address and set DNS to Gateway
+      WiFi.config(WIFI_IP, WIFI_GATEWAY, WIFI_SUBNET, WIFI_GATEWAY);
+#endif
 
       // Connect to Wifi
       WiFi.begin(WIFI_SSID, WIFI_PASSWD);
@@ -60,6 +69,7 @@ bool connectToWifi() {
       if ( WiFi.status() == WL_CONNECTED ) {
         // Output message
         debug("Connected to Wifi!");
+        debug("IP Address: "+WiFi.localIP().toString());
         // return OK
         return true;
       } else {
